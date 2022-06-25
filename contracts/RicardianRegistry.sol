@@ -306,7 +306,7 @@ abstract contract Multicall {
             );
 
             if (!success) {
-                if (result.length < 68) revert("Length exceeds 68 bytes");
+                if (result.length < 68) revert("Length less than 68 bytes");
 
                 assembly {
                     result := add(result, 0x04)
