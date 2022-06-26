@@ -380,7 +380,9 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
     event MintFeeSet(uint256 mintFee);
 
-    event ManagerSet(address indexed manager, uint256 id);
+    event UserSet(address indexed to, uint256 id);
+
+    event ManagerSet(address indexed to, bool approval);
 
     /// -----------------------------------------------------------------------
     /// Ricardian Storage/Logic
@@ -394,14 +396,22 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
     uint256 private mintFee;
 
-    mapping(uint256 => address) public managers;
+    mapping(uint256 => address) public users;
+
+    mapping(address => bool) public managers;
 
     mapping(uint256 => bool) public registered;
 
     mapping(uint256 => string) private uris;
 
-    modifier onlyManager(uint256 id) {
-        require(msg.sender == managers[id], "NOT_MANAGER");
+    modifier onlyUser(uint256 id) {
+        require(msg.sender == users[id], "NOT_USER");
+
+        _;
+    }
+
+    modifier onlyManager() {
+        require(managers[msg.sender], "NOT_MANAGER");
 
         _;
     }
@@ -445,7 +455,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI,
-        address manager
+        address user
     ) external payable {
         uint256 fee = mintFee;
 
@@ -453,13 +463,45 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
         require(!registered[id], "REGISTERED");
 
-        if (manager != address(0)) managers[id] = manager;
+        if (user != address(0)) users[id] = user;
 
         registered[id] = true;
 
         __mint(to, id, amount, data, tokenURI);
 
-        emit ManagerSet(manager, id);
+        emit UserSet(user, id);
+    }
+
+    /// -----------------------------------------------------------------------
+    /// User Functions
+    /// -----------------------------------------------------------------------
+
+    function userMint(
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data,
+        string calldata tokenURI
+    ) external payable onlyUser(id) {
+        __mint(to, id, amount, data, tokenURI);
+    }
+
+    function userBurn(
+        address from,
+        uint256 id,
+        uint256 amount
+    ) external payable onlyUser(id) {
+        __burn(from, id, amount);
+    }
+
+    function setUser(address to, uint256 id)
+        external
+        payable
+        onlyUser(id)
+    {
+        users[id] = to;
+
+        emit UserSet(to, id);
     }
 
     /// -----------------------------------------------------------------------
@@ -472,7 +514,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI
-    ) external payable onlyManager(id) {
+    ) external payable onlyManager {
         __mint(to, id, amount, data, tokenURI);
     }
 
@@ -480,18 +522,8 @@ contract Ricardian is ERC1155, Multicall, Owned {
         address from,
         uint256 id,
         uint256 amount
-    ) external payable onlyManager(id) {
+    ) external payable onlyManager {
         __burn(from, id, amount);
-    }
-
-    function setManager(address to, uint256 id)
-        external
-        payable
-        onlyManager(id)
-    {
-        managers[id] = to;
-
-        emit ManagerSet(to, id);
     }
 
     /// -----------------------------------------------------------------------
@@ -516,14 +548,24 @@ contract Ricardian is ERC1155, Multicall, Owned {
         __burn(from, id, amount);
     }
 
-    function ownerSetManager(address to, uint256 id)
+    function ownerSetUser(address to, uint256 id)
         external
         payable
         onlyOwner
     {
-        managers[id] = to;
+        users[id] = to;
 
-        emit ManagerSet(to, id);
+        emit UserSet(to, id);
+    }
+
+    function ownerSetManager(address to, bool approval)
+        external
+        payable
+        onlyOwner
+    {
+        managers[to] = approval;
+
+        emit ManagerSet(to, approval);
     }
 
     function ownerSetBaseURI(string calldata _baseURI)
