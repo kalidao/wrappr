@@ -452,7 +452,7 @@ contract Ricardian is ERC1155votes, Multicall {
 
     mapping(uint256 => bool) public paused;
 
-    mapping(address => bool) public verified;
+    mapping(address => mapping(uint256 => bool)) public verified;
 
     mapping(uint256 => string) private uris;
 
@@ -609,7 +609,7 @@ contract Ricardian is ERC1155votes, Multicall {
     ) external payable {
         require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
 
-        verified[to] = verify;
+        verified[to][id] = verify;
 
         emit UserVerificationSet(msg.sender, to, id, verify);
     }
@@ -686,7 +686,7 @@ contract Ricardian is ERC1155votes, Multicall {
     ) public override {
         require(!paused[id], "LOCKED");
 
-        require(verified[from] && verified[to], "NOT_LISTED");
+        require(verified[from][id] && verified[to][id], "NOT_LISTED");
 
         super.safeTransferFrom(from, to, id, amount, data);
     }
