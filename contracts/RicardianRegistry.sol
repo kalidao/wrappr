@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-/// @notice Minimalist and gas efficient standard ERC1155 implementation.
+/// @notice Minimalist and gas efficient ERC1155-like implementation.
+/// @dev Modified by KaliCo LLC for Ricardian to remove batching in favour of Multicall.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155 {
     /*//////////////////////////////////////////////////////////////
@@ -14,14 +15,6 @@ abstract contract ERC1155 {
         address indexed to,
         uint256 id,
         uint256 amount
-    );
-
-    event TransferBatch(
-        address indexed operator,
-        address indexed from,
-        address indexed to,
-        uint256[] ids,
-        uint256[] amounts
     );
 
     event ApprovalForAll(
@@ -82,54 +75,6 @@ abstract contract ERC1155 {
                     amount,
                     data
                 ) == ERC1155TokenReceiver.onERC1155Received.selector,
-                "UNSAFE_RECIPIENT"
-            );
-        } else require(to != address(0), "INVALID_RECIPIENT");
-    }
-
-    function safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
-        bytes calldata data
-    ) public virtual {
-        require(ids.length == amounts.length, "LENGTH_MISMATCH");
-
-        require(
-            msg.sender == from || isApprovedForAll[from][msg.sender],
-            "NOT_AUTHORIZED"
-        );
-
-        // Storing these outside the loop saves ~15 gas per iteration.
-        uint256 id;
-        uint256 amount;
-
-        for (uint256 i = 0; i < ids.length; ) {
-            id = ids[i];
-            amount = amounts[i];
-
-            balanceOf[from][id] -= amount;
-            balanceOf[to][id] += amount;
-
-            // An array can't have a total length
-            // larger than the max uint256 value.
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit TransferBatch(msg.sender, from, to, ids, amounts);
-
-        if (to.code.length != 0) {
-            require(
-                ERC1155TokenReceiver(to).onERC1155BatchReceived(
-                    msg.sender,
-                    from,
-                    ids,
-                    amounts,
-                    data
-                ) == ERC1155TokenReceiver.onERC1155BatchReceived.selector,
                 "UNSAFE_RECIPIENT"
             );
         } else require(to != address(0), "INVALID_RECIPIENT");
@@ -198,64 +143,6 @@ abstract contract ERC1155 {
         } else require(to != address(0), "INVALID_RECIPIENT");
     }
 
-    function _batchMint(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal virtual {
-        uint256 idsLength = ids.length; // Saves MLOADs.
-
-        require(idsLength == amounts.length, "LENGTH_MISMATCH");
-
-        for (uint256 i = 0; i < idsLength; ) {
-            balanceOf[to][ids[i]] += amounts[i];
-
-            // An array can't have a total length
-            // larger than the max uint256 value.
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit TransferBatch(msg.sender, address(0), to, ids, amounts);
-
-        if (to.code.length != 0) {
-            require(
-                ERC1155TokenReceiver(to).onERC1155BatchReceived(
-                    msg.sender,
-                    address(0),
-                    ids,
-                    amounts,
-                    data
-                ) == ERC1155TokenReceiver.onERC1155BatchReceived.selector,
-                "UNSAFE_RECIPIENT"
-            );
-        } else require(to != address(0), "INVALID_RECIPIENT");
-    }
-
-    function _batchBurn(
-        address from,
-        uint256[] memory ids,
-        uint256[] memory amounts
-    ) internal virtual {
-        uint256 idsLength = ids.length; // Saves MLOADs.
-
-        require(idsLength == amounts.length, "LENGTH_MISMATCH");
-
-        for (uint256 i = 0; i < idsLength; ) {
-            balanceOf[from][ids[i]] -= amounts[i];
-
-            // An array can't have a total length
-            // larger than the max uint256 value.
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit TransferBatch(msg.sender, from, address(0), ids, amounts);
-    }
-
     function _burn(
         address from,
         uint256 id,
@@ -288,6 +175,197 @@ abstract contract ERC1155TokenReceiver {
         bytes calldata
     ) external virtual returns (bytes4) {
         return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
+    }
+}
+
+/// @notice A generic interface for a contract which properly accepts ERC1155 tokens.
+/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
+abstract contract ERC1155votes is ERC1155 {
+    /// -----------------------------------------------------------------------
+    /// Events
+    /// -----------------------------------------------------------------------
+
+    event DelegateChanged(
+        address indexed delegator,
+        uint256 id,
+        address indexed fromDelegate,
+        address indexed toDelegate
+    );
+
+    event DelegateVotesChanged(
+        address indexed delegate,
+        uint256 id,
+        uint256 previousBalance,
+        uint256 newBalance
+    );
+
+    /// -----------------------------------------------------------------------
+    /// Checkpoint Storage
+    /// -----------------------------------------------------------------------
+     
+    mapping(address => mapping(uint256 => address)) private _delegates;
+
+    mapping(address => mapping(uint256 => uint256)) public numCheckpoints;
+
+    mapping(address => mapping(uint256 => mapping(uint256 => Checkpoint))) public checkpoints;
+    
+    struct Checkpoint {
+        uint64 fromTimestamp;
+        uint192 votes;
+    }
+
+    /// -----------------------------------------------------------------------
+    /// Delegation Logic
+    /// -----------------------------------------------------------------------
+
+    function delegates(address account, uint256 id) public view returns (address) {
+        address current = _delegates[account][id];
+
+        return current == address(0) ? account : current;
+    }
+
+    function getCurrentVotes(address account, uint256 id) external view returns (uint256) {
+        // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+        unchecked {
+            uint256 nCheckpoints = numCheckpoints[account][id];
+
+            return
+                nCheckpoints != 0
+                    ? checkpoints[account][nCheckpoints - 1][id].votes
+                    : 0;
+        }
+    }
+
+    function getPriorVotes(
+        address account, 
+        uint256 id,
+        uint256 timestamp
+    )
+        external
+        view
+        returns (uint256)
+    {
+        require(block.timestamp > timestamp, "UNDETERMINED");
+
+        uint256 nCheckpoints = numCheckpoints[account][id];
+
+        if (nCheckpoints == 0) return 0;
+
+        // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+        unchecked {
+            if (
+                checkpoints[account][nCheckpoints - 1][id].fromTimestamp <=
+                timestamp
+            ) return checkpoints[account][nCheckpoints - 1][id].votes;
+
+            if (checkpoints[account][0][id].fromTimestamp > timestamp) return 0;
+
+            uint256 lower;
+
+            uint256 upper = nCheckpoints - 1;
+
+            while (upper > lower) {
+                uint256 center = upper - (upper - lower) / 2;
+
+                Checkpoint memory cp = checkpoints[account][center][id];
+
+                if (cp.fromTimestamp == timestamp) {
+                    return cp.votes;
+                } else if (cp.fromTimestamp < timestamp) {
+                    lower = center;
+                } else {
+                    upper = center - 1;
+                }
+            }
+
+            return checkpoints[account][lower][id].votes;
+        }
+    }
+
+    function delegate(address account, uint256 id) external payable {
+        address currentDelegate = delegates(msg.sender, id);
+
+        _delegates[msg.sender][id] = account;
+
+        _moveDelegates(currentDelegate, account, id, balanceOf[msg.sender][id]);
+
+        emit DelegateChanged(msg.sender, id, currentDelegate, account);
+    }
+
+    function _moveDelegates(
+        address srcRep,
+        address dstRep,
+        uint256 id,
+        uint256 amount
+    ) internal {
+        if (srcRep != dstRep && amount != 0) {
+            if (srcRep != address(0)) {
+                uint256 srcRepNum = numCheckpoints[srcRep][id];
+
+                uint256 srcRepOld = srcRepNum != 0
+                    ? checkpoints[srcRep][srcRepNum - 1][id].votes
+                    : 0;
+
+                uint256 srcRepNew = srcRepOld - amount;
+
+                _writeCheckpoint(srcRep, id, srcRepNum, srcRepOld, srcRepNew);
+            }
+
+            if (dstRep != address(0)) {
+                uint256 dstRepNum = numCheckpoints[dstRep][id];
+
+                uint256 dstRepOld = dstRepNum != 0
+                    ? checkpoints[dstRep][dstRepNum - 1][id].votes
+                    : 0;
+
+                uint256 dstRepNew = dstRepOld + amount;
+
+                _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepNew);
+            }
+        }
+    }
+
+    function _writeCheckpoint(
+        address delegatee,
+        uint256 id,
+        uint256 nCheckpoints,
+        uint256 oldVotes,
+        uint256 newVotes
+    ) internal {
+        unchecked {
+            // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+            if (
+                nCheckpoints != 0 &&
+                checkpoints[delegatee][nCheckpoints - 1][id].fromTimestamp ==
+                block.timestamp
+            ) {
+                checkpoints[delegatee][nCheckpoints - 1][id].votes = safeCastTo192(
+                    newVotes
+                );
+            } else {
+                checkpoints[delegatee][nCheckpoints][id] = Checkpoint(
+                    safeCastTo64(block.timestamp),
+                    safeCastTo192(newVotes)
+                );
+
+                // cannot realistically overflow
+                numCheckpoints[delegatee][id] = nCheckpoints + 1;
+            }
+        }
+
+        emit DelegateVotesChanged(delegatee, id, oldVotes, newVotes);
+    }
+
+    function safeCastTo64(uint256 x) internal pure returns (uint64 y) {
+        require(x < 1 << 64);
+
+        y = uint64(x);
+    }
+
+    function safeCastTo192(uint256 x) internal pure returns (uint192 y) {
+        require(x < 1 << 192);
+
+        y = uint192(x);
     }
 }
 
@@ -326,63 +404,29 @@ abstract contract Multicall {
     }
 }
 
-/// @notice Simple single owner authorization mixin.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/auth/Owned.sol)
-abstract contract Owned {
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
-
-    event OwnerUpdated(address indexed user, address indexed newOwner);
-
-    /*//////////////////////////////////////////////////////////////
-                            OWNERSHIP STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-    address public owner;
-
-    modifier onlyOwner() virtual {
-        require(msg.sender == owner, "UNAUTHORIZED");
-
-        _;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
-    //////////////////////////////////////////////////////////////*/
-
-    constructor(address _owner) {
-        owner = _owner;
-
-        emit OwnerUpdated(address(0), _owner);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                             OWNERSHIP LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    function setOwner(address newOwner) public virtual onlyOwner {
-        owner = newOwner;
-
-        emit OwnerUpdated(msg.sender, newOwner);
-    }
-}
-
 /// @title Ricardian
 /// @author KaliCo LLC
 /// @notice Ricardian contract for on-chain entities.
-contract Ricardian is ERC1155, Multicall, Owned {
+contract Ricardian is ERC1155votes, Multicall {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
 
-    event BaseURIset(string baseURI);
+    event OwnerOfSet(address indexed caller, address indexed to, uint256 id);
 
-    event MintFeeSet(uint256 mintFee);
+    event ManagerSet(address indexed caller, address indexed to, bool approval);
 
-    event UserSet(address indexed to, uint256 id);
+    event AdminSet(address indexed caller, address indexed to);
 
-    event ManagerSet(address indexed to, bool approval);
+    event TokenPauseSet(address indexed caller, uint256 id, bool pause);
+
+    event UserVerificationSet(address indexed caller, address indexed to, uint256 id, bool verify);
+
+    event BaseURIset(address indexed caller, string baseURI);
+
+    event UserURISet(address indexed caller, address indexed to, string userURI);
+
+    event MintFeeSet(address indexed caller, uint256 mintFee);
 
     /// -----------------------------------------------------------------------
     /// Ricardian Storage/Logic
@@ -396,22 +440,38 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
     uint256 private mintFee;
 
-    mapping(uint256 => address) public users;
+    address public admin;
+
+    bool public verification;
+
+    mapping(uint256 => address) public ownerOf;
 
     mapping(address => bool) public managers;
 
     mapping(uint256 => bool) public registered;
 
+    mapping(uint256 => bool) public paused;
+
+    mapping(address => bool) public verified;
+
     mapping(uint256 => string) private uris;
 
-    modifier onlyUser(uint256 id) {
-        require(msg.sender == users[id], "NOT_USER");
+    mapping(address => string) public users;
+
+    modifier onlyOwnerOf(uint256 id) {
+        require(msg.sender == ownerOf[id], "NOT_OWNER");
 
         _;
     }
 
     modifier onlyManager() {
         require(managers[msg.sender], "NOT_MANAGER");
+
+        _;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "NOT_ADMIN");
 
         _;
     }
@@ -430,8 +490,8 @@ contract Ricardian is ERC1155, Multicall, Owned {
         string memory _symbol,
         string memory _baseURI,
         uint256 _mintFee,
-        address _owner
-    ) payable Owned(_owner) {
+        address _admin
+    ) payable {
         name = _name;
 
         symbol = _symbol;
@@ -440,9 +500,13 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
         mintFee = _mintFee;
 
-        emit BaseURIset(_baseURI);
+        admin = _admin;
 
-        emit MintFeeSet(_mintFee);
+        emit BaseURIset(address(0), _baseURI);
+
+        emit MintFeeSet(address(0), _mintFee);
+
+        emit AdminSet(address(0), _admin);
     }
 
     /// -----------------------------------------------------------------------
@@ -455,7 +519,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI,
-        address user
+        address owner
     ) external payable {
         uint256 fee = mintFee;
 
@@ -463,13 +527,26 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
         require(!registered[id], "REGISTERED");
 
-        if (user != address(0)) users[id] = user;
+        if (owner != address(0)) ownerOf[id] = owner;
 
         registered[id] = true;
 
         __mint(to, id, amount, data, tokenURI);
 
-        emit UserSet(user, id);
+        emit OwnerOfSet(msg.sender, owner, id);
+    }
+
+    function burn(
+        address from, 
+        uint256 id, 
+        uint256 amount
+    ) external payable {
+        require(
+            msg.sender == from || isApprovedForAll[from][msg.sender],
+            "NOT_AUTHORIZED"
+        );
+
+        __burn(from, id, amount);
     }
 
     /// -----------------------------------------------------------------------
@@ -483,7 +560,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
         bytes calldata data,
         string calldata tokenURI
     ) external payable {
-        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+        require(managers[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
 
         __mint(to, id, amount, data, tokenURI);
     }
@@ -493,56 +570,90 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 id,
         uint256 amount
     ) external payable {
-        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+        require(managers[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
 
         __burn(from, id, amount);
     }
 
-    function setUser(address to, uint256 id)
+    function setTokenURI(uint256 id, string calldata tokenURI) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        uris[id] = tokenURI;
+
+        emit URI(tokenURI, id);
+    }
+
+    function setOwnerOf(address to, uint256 id)
         external
         payable
     {
-        require(msg.sender == users[id] || msg.sender == owner, "FORBIDDEN");
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
 
-        users[id] = to;
+        ownerOf[id] = to;
 
-        emit UserSet(to, id);
+        emit OwnerOfSet(msg.sender, to, id);
+    }
+
+    function setTokenPause(uint256 id, bool pause) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        paused[id] = pause;
+
+        emit TokenPauseSet(msg.sender, id, pause);
+    }
+
+    function setUserVerification(
+        address to, 
+        uint256 id, 
+        bool verify
+    ) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        verified[to] = verify;
+
+        emit UserVerificationSet(msg.sender, to, id, verify);
     }
 
     /// -----------------------------------------------------------------------
     /// Owner Functions
     /// -----------------------------------------------------------------------
 
-    function ownerSetManager(address to, bool approval)
+    function setManager(address to, bool approval)
         external
         payable
-        onlyOwner
+        onlyAdmin
     {
         managers[to] = approval;
 
-        emit ManagerSet(to, approval);
+        emit ManagerSet(msg.sender, to, approval);
     }
 
-    function ownerSetBaseURI(string calldata _baseURI)
+    function setBaseURI(string calldata _baseURI)
         external
         payable
-        onlyOwner
+        onlyAdmin
     {
         baseURI = _baseURI;
 
-        emit BaseURIset(_baseURI);
+        emit BaseURIset(msg.sender, _baseURI);
     }
 
-    function ownerSetMintFee(uint256 _mintFee) external payable onlyOwner {
+    function setUserURI(address to, string calldata userURI) external payable {
+        users[to] = userURI;
+
+        emit UserURISet(msg.sender, to, userURI);
+    }
+
+    function setMintFee(uint256 _mintFee) external payable onlyAdmin {
         mintFee = _mintFee;
 
-        emit MintFeeSet(_mintFee);
+        emit MintFeeSet(msg.sender, _mintFee);
     }
 
-    function ownerClaimFee(address to, uint256 amount)
+    function claimFee(address to, uint256 amount)
         external
         payable
-        onlyOwner
+        onlyAdmin
     {
         assembly {
             // Transfer the ETH and check if it succeeded or not.
@@ -554,6 +665,30 @@ contract Ricardian is ERC1155, Multicall, Owned {
                 revert(0x00, 0x64) // Revert with (offset, size).
             }
         }
+    }
+
+    function setAdmin(address to) external payable onlyAdmin {
+        admin = to;
+
+        emit AdminSet(msg.sender, to);
+    }
+
+    /// -----------------------------------------------------------------------
+    /// Transfer Functions
+    /// -----------------------------------------------------------------------
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) public override {
+        require(!paused[id], "LOCKED");
+
+        require(verified[from] && verified[to], "NOT_LISTED");
+
+        super.safeTransferFrom(from, to, id, amount, data);
     }
 
     /// -----------------------------------------------------------------------
@@ -569,6 +704,8 @@ contract Ricardian is ERC1155, Multicall, Owned {
     ) internal {
         _mint(to, id, amount, data);
 
+        _moveDelegates(address(0), delegates(to, id), id, amount);
+
         if (bytes(tokenURI).length != 0) {
             uris[id] = tokenURI;
 
@@ -582,6 +719,8 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 amount
     ) internal {
         _burn(from, id, amount);
+
+        _moveDelegates(delegates(from, id), address(0), id, amount);
     }
 }
 
@@ -589,7 +728,14 @@ contract Ricardian is ERC1155, Multicall, Owned {
 /// @author KaliCo LLC
 /// @notice Factory to deploy Ricardian contracts.
 contract RicardianRegistry is Multicall {
-    event RicardianRegistered(address indexed ricardian, string name, string symbol, string baseURI, uint256 mintFee, address owner);
+    event RicardianRegistered(
+        address indexed ricardian, 
+        string name, 
+        string symbol, 
+        string baseURI, 
+        uint256 mintFee, 
+        address owner
+    );
 
     function registerRicardian(
         string calldata _name,
@@ -608,6 +754,13 @@ contract RicardianRegistry is Multicall {
             )
         );
 
-        emit RicardianRegistered(ricardian, _name, _symbol, _baseURI, _mintFee, _owner);
+        emit RicardianRegistered(
+            ricardian, 
+            _name, 
+            _symbol, 
+            _baseURI, 
+            _mintFee, 
+            _owner
+        );
     }
 }
