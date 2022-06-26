@@ -306,7 +306,7 @@ abstract contract Multicall {
             );
 
             if (!success) {
-                if (result.length < 68) revert("Length less than 68 bytes");
+                if (result.length < 68) revert();
 
                 assembly {
                     result := add(result, 0x04)
@@ -380,7 +380,9 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
     event MintFeeSet(uint256 mintFee);
 
-    event ManagerSet(address indexed manager, uint256 id);
+    event UserSet(address indexed to, uint256 id);
+
+    event ManagerSet(address indexed to, bool approval);
 
     /// -----------------------------------------------------------------------
     /// Ricardian Storage/Logic
@@ -394,14 +396,22 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
     uint256 private mintFee;
 
-    mapping(uint256 => address) public managers;
+    mapping(uint256 => address) public users;
+
+    mapping(address => bool) public managers;
 
     mapping(uint256 => bool) public registered;
 
     mapping(uint256 => string) private uris;
 
-    modifier onlyManager(uint256 id) {
-        require(msg.sender == managers[id], "NOT_MANAGER");
+    modifier onlyUser(uint256 id) {
+        require(msg.sender == users[id], "NOT_USER");
+
+        _;
+    }
+
+    modifier onlyManager() {
+        require(managers[msg.sender], "NOT_MANAGER");
 
         _;
     }
@@ -445,7 +455,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI,
-        address manager
+        address user
     ) external payable {
         uint256 fee = mintFee;
 
@@ -453,77 +463,64 @@ contract Ricardian is ERC1155, Multicall, Owned {
 
         require(!registered[id], "REGISTERED");
 
-        if (manager != address(0)) managers[id] = manager;
+        if (user != address(0)) users[id] = user;
 
         registered[id] = true;
 
         __mint(to, id, amount, data, tokenURI);
 
-        emit ManagerSet(manager, id);
+        emit UserSet(user, id);
     }
 
     /// -----------------------------------------------------------------------
-    /// Manager Functions
+    /// Management Functions
     /// -----------------------------------------------------------------------
 
-    function managerMint(
+    function manageMint(
         address to,
         uint256 id,
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI
-    ) external payable onlyManager(id) {
+    ) external payable {
+        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+
         __mint(to, id, amount, data, tokenURI);
     }
 
-    function managerBurn(
+    function manageBurn(
         address from,
         uint256 id,
         uint256 amount
-    ) external payable onlyManager(id) {
+    ) external payable {
+        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+
         __burn(from, id, amount);
     }
 
-    function setManager(address to, uint256 id)
+    function setUser(address to, uint256 id)
         external
         payable
-        onlyManager(id)
     {
-        managers[id] = to;
+        require(msg.sender == users[id] || msg.sender == owner, "FORBIDDEN");
 
-        emit ManagerSet(to, id);
+        users[id] = to;
+
+        emit UserSet(to, id);
     }
 
     /// -----------------------------------------------------------------------
     /// Owner Functions
     /// -----------------------------------------------------------------------
 
-    function ownerMint(
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes calldata data,
-        string calldata tokenURI
-    ) external payable onlyOwner {
-        __mint(to, id, amount, data, tokenURI);
-    }
-
-    function ownerBurn(
-        address from,
-        uint256 id,
-        uint256 amount
-    ) external payable onlyOwner {
-        __burn(from, id, amount);
-    }
-
-    function ownerSetManager(address to, uint256 id)
+    function ownerSetManager(address to, bool approval)
         external
         payable
         onlyOwner
     {
-        managers[id] = to;
+        managers[to] = approval;
 
-        emit ManagerSet(to, id);
+        emit ManagerSet(to, approval);
     }
 
     function ownerSetBaseURI(string calldata _baseURI)
