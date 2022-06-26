@@ -589,7 +589,7 @@ contract Ricardian is ERC1155, Multicall, Owned {
 /// @author KaliCo LLC
 /// @notice Factory to deploy Ricardian contracts.
 contract RicardianRegistry is Multicall {
-    event RicardianRegistered(address indexed ricardian);
+    event RicardianRegistered(address indexed ricardian, string name, string symbol, string baseURI, uint256 mintFee, address owner);
 
     function registerRicardian(
         string calldata _name,
@@ -608,6 +608,6 @@ contract RicardianRegistry is Multicall {
             )
         );
 
-        emit RicardianRegistered(ricardian);
+        emit RicardianRegistered(ricardian, _name, _symbol, _baseURI, _mintFee, _owner);
     }
 }
