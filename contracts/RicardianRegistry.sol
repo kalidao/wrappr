@@ -306,7 +306,7 @@ abstract contract Multicall {
             );
 
             if (!success) {
-                if (result.length < 68) revert("Length less than 68 bytes");
+                if (result.length < 68) revert();
 
                 assembly {
                     result := add(result, 0x04)
@@ -473,90 +473,45 @@ contract Ricardian is ERC1155, Multicall, Owned {
     }
 
     /// -----------------------------------------------------------------------
-    /// User Functions
+    /// Management Functions
     /// -----------------------------------------------------------------------
 
-    function userMint(
+    function manageMint(
         address to,
         uint256 id,
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI
-    ) external payable onlyUser(id) {
+    ) external payable {
+        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+
         __mint(to, id, amount, data, tokenURI);
     }
 
-    function userBurn(
+    function manageBurn(
         address from,
         uint256 id,
         uint256 amount
-    ) external payable onlyUser(id) {
+    ) external payable {
+        require(managers[msg.sender] || msg.sender == owner || msg.sender == users[id] , "FORBIDDEN");
+
         __burn(from, id, amount);
     }
 
     function setUser(address to, uint256 id)
         external
         payable
-        onlyUser(id)
     {
+        require(msg.sender == users[id] || msg.sender == owner, "FORBIDDEN");
+
         users[id] = to;
 
         emit UserSet(to, id);
-    }
-
-    /// -----------------------------------------------------------------------
-    /// Manager Functions
-    /// -----------------------------------------------------------------------
-
-    function managerMint(
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes calldata data,
-        string calldata tokenURI
-    ) external payable onlyManager {
-        __mint(to, id, amount, data, tokenURI);
-    }
-
-    function managerBurn(
-        address from,
-        uint256 id,
-        uint256 amount
-    ) external payable onlyManager {
-        __burn(from, id, amount);
     }
 
     /// -----------------------------------------------------------------------
     /// Owner Functions
     /// -----------------------------------------------------------------------
-
-    function ownerMint(
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes calldata data,
-        string calldata tokenURI
-    ) external payable onlyOwner {
-        __mint(to, id, amount, data, tokenURI);
-    }
-
-    function ownerBurn(
-        address from,
-        uint256 id,
-        uint256 amount
-    ) external payable onlyOwner {
-        __burn(from, id, amount);
-    }
-
-    function ownerSetUser(address to, uint256 id)
-        external
-        payable
-        onlyOwner
-    {
-        users[id] = to;
-
-        emit UserSet(to, id);
-    }
 
     function ownerSetManager(address to, bool approval)
         external
