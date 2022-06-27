@@ -231,7 +231,7 @@ abstract contract ERC1155votes is ERC1155 {
 
             return
                 nCheckpoints != 0
-                    ? checkpoints[account][nCheckpoints - 1][id].votes
+                    ? checkpoints[account][id][nCheckpoints - 1].votes
                     : 0;
         }
     }
@@ -254,11 +254,11 @@ abstract contract ERC1155votes is ERC1155 {
         // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
         unchecked {
             if (
-                checkpoints[account][nCheckpoints - 1][id].fromTimestamp <=
+                checkpoints[account][id][nCheckpoints - 1].fromTimestamp <=
                 timestamp
-            ) return checkpoints[account][nCheckpoints - 1][id].votes;
+            ) return checkpoints[account][id][nCheckpoints - 1].votes;
 
-            if (checkpoints[account][0][id].fromTimestamp > timestamp) return 0;
+            if (checkpoints[account][id][0].fromTimestamp > timestamp) return 0;
 
             uint256 lower;
 
@@ -267,7 +267,7 @@ abstract contract ERC1155votes is ERC1155 {
             while (upper > lower) {
                 uint256 center = upper - (upper - lower) / 2;
 
-                Checkpoint memory cp = checkpoints[account][center][id];
+                Checkpoint memory cp = checkpoints[account][id][center];
 
                 if (cp.fromTimestamp == timestamp) {
                     return cp.votes;
@@ -278,7 +278,7 @@ abstract contract ERC1155votes is ERC1155 {
                 }
             }
 
-            return checkpoints[account][lower][id].votes;
+            return checkpoints[account][id][lower].votes;
         }
     }
 
@@ -303,7 +303,7 @@ abstract contract ERC1155votes is ERC1155 {
                 uint256 srcRepNum = numCheckpoints[srcRep][id];
 
                 uint256 srcRepOld = srcRepNum != 0
-                    ? checkpoints[srcRep][srcRepNum - 1][id].votes
+                    ? checkpoints[srcRep][id][srcRepNum - 1].votes
                     : 0;
 
                 uint256 srcRepNew = srcRepOld - amount;
@@ -315,7 +315,7 @@ abstract contract ERC1155votes is ERC1155 {
                 uint256 dstRepNum = numCheckpoints[dstRep][id];
 
                 uint256 dstRepOld = dstRepNum != 0
-                    ? checkpoints[dstRep][dstRepNum - 1][id].votes
+                    ? checkpoints[dstRep][id][dstRepNum - 1].votes
                     : 0;
 
                 uint256 dstRepNew = dstRepOld + amount;
@@ -336,14 +336,14 @@ abstract contract ERC1155votes is ERC1155 {
             // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
             if (
                 nCheckpoints != 0 &&
-                checkpoints[delegatee][nCheckpoints - 1][id].fromTimestamp ==
+                checkpoints[delegatee][id][nCheckpoints - 1].fromTimestamp ==
                 block.timestamp
             ) {
-                checkpoints[delegatee][nCheckpoints - 1][id].votes = safeCastTo192(
+                checkpoints[delegatee][id][nCheckpoints - 1].votes = safeCastTo192(
                     newVotes
                 );
             } else {
-                checkpoints[delegatee][nCheckpoints][id] = Checkpoint(
+                checkpoints[delegatee][id][nCheckpoints] = Checkpoint(
                     safeCastTo64(block.timestamp),
                     safeCastTo192(newVotes)
                 );
@@ -420,11 +420,13 @@ contract Ricardian is ERC1155votes, Multicall {
 
     event TokenPauseSet(address indexed caller, uint256 id, bool pause);
 
-    event UserVerificationSet(address indexed caller, address indexed to, uint256 id, bool verify);
+    event TokenPermissionSet(address indexed caller, uint256 id, bool permission);
+
+    event UserPermissionSet(address indexed caller, address indexed to, uint256 id, bool permission);
 
     event BaseURIset(address indexed caller, string baseURI);
 
-    event UserURISet(address indexed caller, address indexed to, string userURI);
+    event UserURISet(address indexed caller, address indexed to, uint256 id, string userURI);
 
     event MintFeeSet(address indexed caller, uint256 mintFee);
 
@@ -442,21 +444,21 @@ contract Ricardian is ERC1155votes, Multicall {
 
     address public admin;
 
-    bool public verification;
-
     mapping(uint256 => address) public ownerOf;
 
-    mapping(address => bool) public managers;
+    mapping(address => bool) public manager;
 
     mapping(uint256 => bool) public registered;
 
     mapping(uint256 => bool) public paused;
 
-    mapping(address => mapping(uint256 => bool)) public verified;
+    mapping(uint256 => bool) public tokenPermissioned;
 
-    mapping(uint256 => string) private uris;
+    mapping(address => mapping(uint256 => bool)) public userPermissioned;
 
-    mapping(address => string) public users;
+    mapping(uint256 => string) private tokenURIs;
+
+    mapping(address => mapping(uint256 => string)) public userURIs;
 
     modifier onlyOwnerOf(uint256 id) {
         require(msg.sender == ownerOf[id], "NOT_OWNER");
@@ -465,7 +467,7 @@ contract Ricardian is ERC1155votes, Multicall {
     }
 
     modifier onlyManager() {
-        require(managers[msg.sender], "NOT_MANAGER");
+        require(manager[msg.sender], "NOT_MANAGER");
 
         _;
     }
@@ -477,8 +479,8 @@ contract Ricardian is ERC1155votes, Multicall {
     }
 
     function uri(uint256 id) public view override returns (string memory) {
-        if (bytes(uris[id]).length == 0) return baseURI;
-        else return uris[id];
+        if (bytes(tokenURIs[id]).length == 0) return baseURI;
+        else return tokenURIs[id];
     }
 
     /// -----------------------------------------------------------------------
@@ -527,13 +529,15 @@ contract Ricardian is ERC1155votes, Multicall {
 
         require(!registered[id], "REGISTERED");
 
-        if (owner != address(0)) ownerOf[id] = owner;
+        if (owner != address(0)) {
+            ownerOf[id] = owner;
+
+            emit OwnerOfSet(msg.sender, owner, id);
+        }
 
         registered[id] = true;
 
         __mint(to, id, amount, data, tokenURI);
-
-        emit OwnerOfSet(msg.sender, owner, id);
     }
 
     function burn(
@@ -558,9 +562,18 @@ contract Ricardian is ERC1155votes, Multicall {
         uint256 id,
         uint256 amount,
         bytes calldata data,
-        string calldata tokenURI
+        string calldata tokenURI,
+        address owner
     ) external payable {
-        require(managers[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
+        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
+
+        if (!registered[id]) registered[id] = true;
+
+        if (owner != address(0)) {
+            ownerOf[id] = owner;
+
+            emit OwnerOfSet(msg.sender, owner, id);
+        }
 
         __mint(to, id, amount, data, tokenURI);
     }
@@ -570,17 +583,61 @@ contract Ricardian is ERC1155votes, Multicall {
         uint256 id,
         uint256 amount
     ) external payable {
-        require(managers[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
+        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
 
         __burn(from, id, amount);
+    }
+
+    /// -----------------------------------------------------------------------
+    /// Owner Functions
+    /// -----------------------------------------------------------------------
+
+    function setTokenPause(uint256 id, bool pause) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        paused[id] = pause;
+
+        emit TokenPauseSet(msg.sender, id, pause);
+    }
+
+    function setTokenPermission(uint256 id, bool permission) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        tokenPermissioned[id] = permission;
+
+        emit TokenPermissionSet(msg.sender, id, permission);
+    }
+
+    function setUserPermit(
+        address to, 
+        uint256 id, 
+        bool permission
+    ) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        userPermissioned[to][id] = permission;
+
+        emit UserPermissionSet(msg.sender, to, id, permission);
     }
 
     function setTokenURI(uint256 id, string calldata tokenURI) external payable {
         require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
 
-        uris[id] = tokenURI;
+        tokenURIs[id] = tokenURI;
 
         emit URI(tokenURI, id);
+    }
+
+    function setUserURI(
+        address to, 
+        uint256 id, 
+        string calldata userURI
+    ) external payable {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
+
+        userURIs[to][id] = userURI;
+
+        emit UserURISet(msg.sender, to, id, userURI);
     }
 
     function setOwnerOf(address to, uint256 id)
@@ -594,28 +651,8 @@ contract Ricardian is ERC1155votes, Multicall {
         emit OwnerOfSet(msg.sender, to, id);
     }
 
-    function setTokenPause(uint256 id, bool pause) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
-        paused[id] = pause;
-
-        emit TokenPauseSet(msg.sender, id, pause);
-    }
-
-    function setUserVerification(
-        address to, 
-        uint256 id, 
-        bool verify
-    ) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
-        verified[to][id] = verify;
-
-        emit UserVerificationSet(msg.sender, to, id, verify);
-    }
-
     /// -----------------------------------------------------------------------
-    /// Owner Functions
+    /// Admin Functions
     /// -----------------------------------------------------------------------
 
     function setManager(address to, bool approval)
@@ -623,7 +660,7 @@ contract Ricardian is ERC1155votes, Multicall {
         payable
         onlyAdmin
     {
-        managers[to] = approval;
+        manager[to] = approval;
 
         emit ManagerSet(msg.sender, to, approval);
     }
@@ -636,12 +673,6 @@ contract Ricardian is ERC1155votes, Multicall {
         baseURI = _baseURI;
 
         emit BaseURIset(msg.sender, _baseURI);
-    }
-
-    function setUserURI(address to, string calldata userURI) external payable {
-        users[to] = userURI;
-
-        emit UserURISet(msg.sender, to, userURI);
     }
 
     function setMintFee(uint256 _mintFee) external payable onlyAdmin {
@@ -686,7 +717,7 @@ contract Ricardian is ERC1155votes, Multicall {
     ) public override {
         require(!paused[id], "LOCKED");
 
-        require(verified[from][id] && verified[to][id], "NOT_LISTED");
+        if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_LISTED");
 
         super.safeTransferFrom(from, to, id, amount, data);
     }
@@ -707,7 +738,7 @@ contract Ricardian is ERC1155votes, Multicall {
         _moveDelegates(address(0), delegates(to, id), id, amount);
 
         if (bytes(tokenURI).length != 0) {
-            uris[id] = tokenURI;
+            tokenURIs[id] = tokenURI;
 
             emit URI(tokenURI, id);
         }
