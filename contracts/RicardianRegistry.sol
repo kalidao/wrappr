@@ -641,7 +641,7 @@ contract Ricardian is ERC1155votes, Multicall {
 
         if (!registered[id]) registered[id] = true;
 
-        if (owner != address(0)) {
+        if (ownerOf[id] == address(0) && owner != address(0)) {
             ownerOf[id] = owner;
 
             emit OwnerOfSet(address(0), owner, id);
@@ -776,11 +776,13 @@ contract Ricardian is ERC1155votes, Multicall {
         uint256 amount,
         bytes calldata data
     ) public override {
-        require(!paused[id], "LOCKED");
-
-        if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_LISTED");
-
         super.safeTransferFrom(from, to, id, amount, data);
+
+        require(!paused[id], "PAUSED");
+
+        if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
+
+        _moveDelegates(delegates(from, id), delegates(to, id), id, amount);
     }
 
     function safeBatchTransferFrom(
@@ -790,14 +792,21 @@ contract Ricardian is ERC1155votes, Multicall {
         uint256[] calldata amounts,
         bytes calldata data
     ) public override {
+        super.safeBatchTransferFrom(from, to, ids, amounts, data);
+
+        // Storing these outside the loop saves ~15 gas per iteration.
         uint256 id;
+        uint256 amount;
 
         for (uint256 i; i < ids.length; ) {
             id = ids[i];
+            amount = amounts[i];
 
-            require(!paused[id], "LOCKED");
+            require(!paused[id], "PAUSED");
 
-            if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_LISTED");
+            if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
+
+            _moveDelegates(delegates(from, id), delegates(to, id), id, amount);
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -805,8 +814,6 @@ contract Ricardian is ERC1155votes, Multicall {
                 ++i;
             }
         }
-
-        super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
     /// -----------------------------------------------------------------------
