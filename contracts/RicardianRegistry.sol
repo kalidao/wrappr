@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-/// @notice Minimalist and gas efficient ERC1155-like implementation.
-/// @dev Modified by KaliCo LLC for Ricardian to remove batching in favour of Multicall.
+/// @notice Minimalist and gas efficient standard ERC1155 implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155 {
     /*//////////////////////////////////////////////////////////////
@@ -17,11 +16,15 @@ abstract contract ERC1155 {
         uint256 amount
     );
 
-    event ApprovalForAll(
-        address indexed owner,
+    event TransferBatch(
         address indexed operator,
-        bool approved
+        address indexed from,
+        address indexed to,
+        uint256[] ids,
+        uint256[] amounts
     );
+
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     event URI(string value, uint256 indexed id);
 
@@ -56,10 +59,7 @@ abstract contract ERC1155 {
         uint256 amount,
         bytes calldata data
     ) public virtual {
-        require(
-            msg.sender == from || isApprovedForAll[from][msg.sender],
-            "NOT_AUTHORIZED"
-        );
+        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
 
         balanceOf[from][id] -= amount;
         balanceOf[to][id] += amount;
@@ -68,13 +68,48 @@ abstract contract ERC1155 {
 
         if (to.code.length != 0) {
             require(
-                ERC1155TokenReceiver(to).onERC1155Received(
-                    msg.sender,
-                    from,
-                    id,
-                    amount,
-                    data
-                ) == ERC1155TokenReceiver.onERC1155Received.selector,
+                ERC1155TokenReceiver(to).onERC1155Received(msg.sender, from, id, amount, data) ==
+                    ERC1155TokenReceiver.onERC1155Received.selector,
+                "UNSAFE_RECIPIENT"
+            );
+        } else require(to != address(0), "INVALID_RECIPIENT");
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    ) public virtual {
+        require(ids.length == amounts.length, "LENGTH_MISMATCH");
+
+        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+
+        // Storing these outside the loop saves ~15 gas per iteration.
+        uint256 id;
+        uint256 amount;
+
+        for (uint256 i = 0; i < ids.length; ) {
+            id = ids[i];
+            amount = amounts[i];
+
+            balanceOf[from][id] -= amount;
+            balanceOf[to][id] += amount;
+
+            // An array can't have a total length
+            // larger than the max uint256 value.
+            unchecked {
+                ++i;
+            }
+        }
+
+        emit TransferBatch(msg.sender, from, to, ids, amounts);
+
+        if (to.code.length != 0) {
+            require(
+                ERC1155TokenReceiver(to).onERC1155BatchReceived(msg.sender, from, ids, amounts, data) ==
+                    ERC1155TokenReceiver.onERC1155BatchReceived.selector,
                 "UNSAFE_RECIPIENT"
             );
         } else require(to != address(0), "INVALID_RECIPIENT");
@@ -103,12 +138,7 @@ abstract contract ERC1155 {
                               ERC165 LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
         return
             interfaceId == 0x01ffc9a7 || // ERC165 Interface ID for ERC165
             interfaceId == 0xd9b67a26 || // ERC165 Interface ID for ERC1155
@@ -131,16 +161,64 @@ abstract contract ERC1155 {
 
         if (to.code.length != 0) {
             require(
-                ERC1155TokenReceiver(to).onERC1155Received(
-                    msg.sender,
-                    address(0),
-                    id,
-                    amount,
-                    data
-                ) == ERC1155TokenReceiver.onERC1155Received.selector,
+                ERC1155TokenReceiver(to).onERC1155Received(msg.sender, address(0), id, amount, data) ==
+                    ERC1155TokenReceiver.onERC1155Received.selector,
                 "UNSAFE_RECIPIENT"
             );
         } else require(to != address(0), "INVALID_RECIPIENT");
+    }
+
+    function _batchMint(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal virtual {
+        uint256 idsLength = ids.length; // Saves MLOADs.
+
+        require(idsLength == amounts.length, "LENGTH_MISMATCH");
+
+        for (uint256 i = 0; i < idsLength; ) {
+            balanceOf[to][ids[i]] += amounts[i];
+
+            // An array can't have a total length
+            // larger than the max uint256 value.
+            unchecked {
+                ++i;
+            }
+        }
+
+        emit TransferBatch(msg.sender, address(0), to, ids, amounts);
+
+        if (to.code.length != 0) {
+            require(
+                ERC1155TokenReceiver(to).onERC1155BatchReceived(msg.sender, address(0), ids, amounts, data) ==
+                    ERC1155TokenReceiver.onERC1155BatchReceived.selector,
+                "UNSAFE_RECIPIENT"
+            );
+        } else require(to != address(0), "INVALID_RECIPIENT");
+    }
+
+    function _batchBurn(
+        address from,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) internal virtual {
+        uint256 idsLength = ids.length; // Saves MLOADs.
+
+        require(idsLength == amounts.length, "LENGTH_MISMATCH");
+
+        for (uint256 i = 0; i < idsLength; ) {
+            balanceOf[from][ids[i]] -= amounts[i];
+
+            // An array can't have a total length
+            // larger than the max uint256 value.
+            unchecked {
+                ++i;
+            }
+        }
+
+        emit TransferBatch(msg.sender, from, address(0), ids, amounts);
     }
 
     function _burn(
@@ -178,8 +256,8 @@ abstract contract ERC1155TokenReceiver {
     }
 }
 
-/// @notice A generic interface for a contract which properly accepts ERC1155 tokens.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
+/// @notice Compound-like voting extension for ERC1155.
+/// @author KaliCo LLC
 abstract contract ERC1155votes is ERC1155 {
     /// -----------------------------------------------------------------------
     /// Events
@@ -460,20 +538,14 @@ contract Ricardian is ERC1155votes, Multicall {
 
     mapping(address => mapping(uint256 => string)) public userURIs;
 
-    modifier onlyOwnerOf(uint256 id) {
-        require(msg.sender == ownerOf[id], "NOT_OWNER");
-
-        _;
-    }
-
-    modifier onlyManager() {
-        require(manager[msg.sender], "NOT_MANAGER");
-
-        _;
-    }
-
     modifier onlyAdmin() {
         require(msg.sender == admin, "NOT_ADMIN");
+
+        _;
+    }
+
+    modifier onlyOwnerOfOrAdmin(uint256 id) {
+        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
 
         _;
     }
@@ -532,7 +604,7 @@ contract Ricardian is ERC1155votes, Multicall {
         if (owner != address(0)) {
             ownerOf[id] = owner;
 
-            emit OwnerOfSet(msg.sender, owner, id);
+            emit OwnerOfSet(address(0), owner, id);
         }
 
         registered[id] = true;
@@ -572,7 +644,7 @@ contract Ricardian is ERC1155votes, Multicall {
         if (owner != address(0)) {
             ownerOf[id] = owner;
 
-            emit OwnerOfSet(msg.sender, owner, id);
+            emit OwnerOfSet(address(0), owner, id);
         }
 
         __mint(to, id, amount, data, tokenURI);
@@ -592,37 +664,29 @@ contract Ricardian is ERC1155votes, Multicall {
     /// Owner Functions
     /// -----------------------------------------------------------------------
 
-    function setTokenPause(uint256 id, bool pause) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
+    function setTokenPause(uint256 id, bool pause) external payable onlyOwnerOfOrAdmin(id) {
         paused[id] = pause;
 
         emit TokenPauseSet(msg.sender, id, pause);
     }
 
-    function setTokenPermission(uint256 id, bool permission) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
+    function setTokenPermission(uint256 id, bool permission) external payable onlyOwnerOfOrAdmin(id) {
         tokenPermissioned[id] = permission;
 
         emit TokenPermissionSet(msg.sender, id, permission);
     }
 
-    function setUserPermit(
+    function setUserPermission(
         address to, 
         uint256 id, 
         bool permission
-    ) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
+    ) external payable onlyOwnerOfOrAdmin(id) {
         userPermissioned[to][id] = permission;
 
         emit UserPermissionSet(msg.sender, to, id, permission);
     }
 
-    function setTokenURI(uint256 id, string calldata tokenURI) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
+    function setTokenURI(uint256 id, string calldata tokenURI) external payable onlyOwnerOfOrAdmin(id) {
         tokenURIs[id] = tokenURI;
 
         emit URI(tokenURI, id);
@@ -632,9 +696,7 @@ contract Ricardian is ERC1155votes, Multicall {
         address to, 
         uint256 id, 
         string calldata userURI
-    ) external payable {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
+    ) external payable onlyOwnerOfOrAdmin(id) {
         userURIs[to][id] = userURI;
 
         emit UserURISet(msg.sender, to, id, userURI);
@@ -643,9 +705,8 @@ contract Ricardian is ERC1155votes, Multicall {
     function setOwnerOf(address to, uint256 id)
         external
         payable
+        onlyOwnerOfOrAdmin(id)
     {
-        require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
-
         ownerOf[id] = to;
 
         emit OwnerOfSet(msg.sender, to, id);
