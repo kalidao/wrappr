@@ -783,6 +783,32 @@ contract Ricardian is ERC1155votes, Multicall {
         super.safeTransferFrom(from, to, id, amount, data);
     }
 
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    ) public override {
+        uint256 id;
+
+        for (uint256 i; i < ids.length; ) {
+            id = ids[i];
+
+            require(!paused[id], "LOCKED");
+
+            if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_LISTED");
+
+            // An array can't have a total length
+            // larger than the max uint256 value.
+            unchecked {
+                ++i;
+            }
+        }
+
+        super.safeBatchTransferFrom(from, to, ids, amounts, data);
+    }
+
     /// -----------------------------------------------------------------------
     /// Internal Functions
     /// -----------------------------------------------------------------------
