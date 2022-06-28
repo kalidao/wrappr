@@ -826,7 +826,7 @@ contract RicardianRegistry is Multicall {
         string symbol, 
         string baseURI, 
         uint256 mintFee, 
-        address owner
+        address indexed owner
     );
 
     function registerRicardian(
