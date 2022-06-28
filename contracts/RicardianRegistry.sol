@@ -826,7 +826,7 @@ contract RicardianRegistry is Multicall {
         string symbol, 
         string baseURI, 
         uint256 mintFee, 
-        address indexed owner
+        address indexed admin
     );
 
     function registerRicardian(
@@ -834,7 +834,7 @@ contract RicardianRegistry is Multicall {
         string calldata _symbol,
         string calldata _baseURI,
         uint256 _mintFee,
-        address _owner
+        address _admin
     ) external payable {
         address ricardian = address(
             new Ricardian{salt: keccak256(bytes(_name))}(
@@ -842,7 +842,7 @@ contract RicardianRegistry is Multicall {
                 _symbol,
                 _baseURI,
                 _mintFee,
-                _owner
+                _admin
             )
         );
 
@@ -852,7 +852,7 @@ contract RicardianRegistry is Multicall {
             _symbol, 
             _baseURI, 
             _mintFee, 
-            _owner
+            _admin
         );
     }
 }
