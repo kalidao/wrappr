@@ -258,30 +258,30 @@ abstract contract ERC1155TokenReceiver {
 
 /// @notice Compound-like voting extension for ERC1155.
 /// @author KaliCo LLC
-abstract contract ERC1155votes is ERC1155 {
+abstract contract ERC1155Votes is ERC1155 {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
 
     event DelegateChanged(
         address indexed delegator,
-        uint256 id,
         address indexed fromDelegate,
-        address indexed toDelegate
+        address indexed toDelegate,
+        uint256 id
     );
 
     event DelegateVotesChanged(
         address indexed delegate,
-        uint256 id,
+        uint256 indexed id,
         uint256 previousBalance,
         uint256 newBalance
     );
 
     /// -----------------------------------------------------------------------
-    /// Checkpoint Storage
+    /// Voting Storage
     /// -----------------------------------------------------------------------
      
-    mapping(address => mapping(uint256 => address)) private _delegates;
+    mapping(address => mapping(uint256 => address)) internal _delegates;
 
     mapping(address => mapping(uint256 => uint256)) public numCheckpoints;
 
@@ -303,7 +303,7 @@ abstract contract ERC1155votes is ERC1155 {
     }
 
     function getCurrentVotes(address account, uint256 id) external view returns (uint256) {
-        // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+        // Won't underflow because decrement only occurs if positive `nCheckpoints`.
         unchecked {
             uint256 nCheckpoints = numCheckpoints[account][id];
 
@@ -329,7 +329,7 @@ abstract contract ERC1155votes is ERC1155 {
 
         if (nCheckpoints == 0) return 0;
 
-        // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+        // Won't underflow because decrement only occurs if positive `nCheckpoints`.
         unchecked {
             if (
                 checkpoints[account][id][nCheckpoints - 1].fromTimestamp <=
@@ -360,14 +360,14 @@ abstract contract ERC1155votes is ERC1155 {
         }
     }
 
-    function delegate(address account, uint256 id) external payable {
+    function delegate(address delegatee, uint256 id) external payable {
         address currentDelegate = delegates(msg.sender, id);
 
-        _delegates[msg.sender][id] = account;
+        _delegates[msg.sender][id] = delegatee;
 
-        _moveDelegates(currentDelegate, account, id, balanceOf[msg.sender][id]);
+        emit DelegateChanged(msg.sender, currentDelegate, delegatee, id);
 
-        emit DelegateChanged(msg.sender, id, currentDelegate, account);
+        _moveDelegates(currentDelegate, delegatee, id, balanceOf[msg.sender][id]);
     }
 
     function _moveDelegates(
@@ -384,9 +384,7 @@ abstract contract ERC1155votes is ERC1155 {
                     ? checkpoints[srcRep][id][srcRepNum - 1].votes
                     : 0;
 
-                uint256 srcRepNew = srcRepOld - amount;
-
-                _writeCheckpoint(srcRep, id, srcRepNum, srcRepOld, srcRepNew);
+                _writeCheckpoint(srcRep, id, srcRepNum, srcRepOld, srcRepOld - amount);
             }
 
             if (dstRep != address(0)) {
@@ -396,9 +394,7 @@ abstract contract ERC1155votes is ERC1155 {
                     ? checkpoints[dstRep][id][dstRepNum - 1].votes
                     : 0;
 
-                uint256 dstRepNew = dstRepOld + amount;
-
-                _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepNew);
+                _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
             }
         }
     }
@@ -411,22 +407,24 @@ abstract contract ERC1155votes is ERC1155 {
         uint256 newVotes
     ) internal {
         unchecked {
-            // this is safe from underflow because decrement only occurs if `nCheckpoints` is positive
+            uint64 timestamp = safeCastTo64(block.timestamp);
+
+            // Won't underflow because decrement only occurs if positive `nCheckpoints`.
             if (
                 nCheckpoints != 0 &&
                 checkpoints[delegatee][id][nCheckpoints - 1].fromTimestamp ==
-                block.timestamp
+                timestamp
             ) {
                 checkpoints[delegatee][id][nCheckpoints - 1].votes = safeCastTo192(
                     newVotes
                 );
             } else {
                 checkpoints[delegatee][id][nCheckpoints] = Checkpoint(
-                    safeCastTo64(block.timestamp),
+                    timestamp,
                     safeCastTo192(newVotes)
                 );
 
-                // cannot realistically overflow
+                // Won't realistically overflow.
                 numCheckpoints[delegatee][id] = nCheckpoints + 1;
             }
         }
@@ -482,10 +480,10 @@ abstract contract Multicall {
     }
 }
 
-/// @title Ricardian
+/// @title Structs
 /// @author KaliCo LLC
 /// @notice Ricardian contract for on-chain entities.
-contract Ricardian is ERC1155votes, Multicall {
+contract Structs is ERC1155Votes, Multicall {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
@@ -748,7 +746,6 @@ contract Ricardian is ERC1155votes, Multicall {
         onlyAdmin
     {
         assembly {
-            // Transfer the ETH and check if it succeeded or not.
             if iszero(call(gas(), to, amount, 0, 0, 0, 0)) {
                 mstore(0x00, hex"08c379a0") // Function selector of the error method.
                 mstore(0x04, 0x20) // Offset of the error string.
@@ -849,12 +846,12 @@ contract Ricardian is ERC1155votes, Multicall {
     }
 }
 
-/// @title Ricardian Registry
+/// @title Structs Registry
 /// @author KaliCo LLC
-/// @notice Factory to deploy Ricardian contracts.
-contract RicardianRegistry is Multicall {
-    event RicardianRegistered(
-        address indexed ricardian, 
+/// @notice Factory to deploy ricardian contracts.
+contract StructsRegistry is Multicall {
+    event StructsRegistered(
+        address indexed structs, 
         string name, 
         string symbol, 
         string baseURI, 
@@ -862,15 +859,15 @@ contract RicardianRegistry is Multicall {
         address indexed admin
     );
 
-    function registerRicardian(
+    function registerStructs(
         string calldata _name,
         string calldata _symbol,
         string calldata _baseURI,
         uint256 _mintFee,
         address _admin
     ) external payable {
-        address ricardian = address(
-            new Ricardian{salt: keccak256(bytes(_name))}(
+        address structs = address(
+            new Structs{salt: keccak256(bytes(_name))}(
                 _name,
                 _symbol,
                 _baseURI,
@@ -879,8 +876,8 @@ contract RicardianRegistry is Multicall {
             )
         );
 
-        emit RicardianRegistered(
-            ricardian, 
+        emit StructsRegistered(
+            structs, 
             _name, 
             _symbol, 
             _baseURI, 
