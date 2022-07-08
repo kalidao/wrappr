@@ -480,10 +480,10 @@ abstract contract Multicall {
     }
 }
 
-/// @title Structs
+/// @title Struct
 /// @author KaliCo LLC
 /// @notice Ricardian contract for on-chain entities.
-contract Structs is ERC1155Votes, Multicall {
+contract Struct is ERC1155Votes, Multicall {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
@@ -507,7 +507,7 @@ contract Structs is ERC1155Votes, Multicall {
     event MintFeeSet(address indexed caller, uint256 mintFee);
 
     /// -----------------------------------------------------------------------
-    /// Ricardian Storage/Logic
+    /// Struct Storage/Logic
     /// -----------------------------------------------------------------------
 
     string public name;
@@ -846,12 +846,12 @@ contract Structs is ERC1155Votes, Multicall {
     }
 }
 
-/// @title Structs Registry
+/// @title Struct Registry
 /// @author KaliCo LLC
 /// @notice Factory to deploy ricardian contracts.
-contract StructsRegistry is Multicall {
-    event StructsRegistered(
-        address indexed structs, 
+contract StructRegistry is Multicall {
+    event StructRegistered(
+        address indexed struct, 
         string name, 
         string symbol, 
         string baseURI, 
@@ -859,15 +859,15 @@ contract StructsRegistry is Multicall {
         address indexed admin
     );
 
-    function registerStructs(
+    function registerStruct(
         string calldata _name,
         string calldata _symbol,
         string calldata _baseURI,
         uint256 _mintFee,
         address _admin
     ) external payable {
-        address structs = address(
-            new Structs{salt: keccak256(bytes(_name))}(
+        address struct = address(
+            new Struct{salt: keccak256(bytes(_name))}(
                 _name,
                 _symbol,
                 _baseURI,
@@ -876,8 +876,8 @@ contract StructsRegistry is Multicall {
             )
         );
 
-        emit StructsRegistered(
-            structs, 
+        emit StructRegistered(
+            struct, 
             _name, 
             _symbol, 
             _baseURI, 
