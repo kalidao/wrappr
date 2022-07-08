@@ -846,10 +846,10 @@ contract Struct is ERC1155Votes, Multicall {
     }
 }
 
-/// @title Struct Registry
+/// @title Structs Registry
 /// @author KaliCo LLC
 /// @notice Factory to deploy ricardian contracts.
-contract StructRegistry is Multicall {
+contract StructsRegistry is Multicall {
     event StructRegistered(
         address indexed struct, 
         string name, 
