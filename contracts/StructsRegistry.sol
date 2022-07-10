@@ -425,7 +425,7 @@ abstract contract ERC1155Votes is ERC1155 {
                 );
 
                 // Won't realistically overflow.
-                numCheckpoints[delegatee][id] = nCheckpoints + 1;
+                ++numCheckpoints[delegatee][id];
             }
         }
 
@@ -488,23 +488,23 @@ contract Struct is ERC1155Votes, Multicall {
     /// Events
     /// -----------------------------------------------------------------------
 
-    event OwnerOfSet(address indexed caller, address indexed to, uint256 id);
+    event OwnerOfSet(address indexed operator, address indexed to, uint256 id);
 
-    event ManagerSet(address indexed caller, address indexed to, bool approval);
+    event ManagerSet(address indexed operator, address indexed to, bool approval);
 
-    event AdminSet(address indexed caller, address indexed to);
+    event AdminSet(address indexed operator, address indexed to);
 
-    event TokenPauseSet(address indexed caller, uint256 id, bool pause);
+    event TransferabilitySet(address indexed operator, uint256 id, bool transferability);
 
-    event TokenPermissionSet(address indexed caller, uint256 id, bool permission);
+    event PermissionSet(address indexed operator, uint256 id, bool permission);
 
-    event UserPermissionSet(address indexed caller, address indexed to, uint256 id, bool permission);
+    event UserPermissionSet(address indexed operator, address indexed to, uint256 id, bool permission);
 
-    event BaseURIset(address indexed caller, string baseURI);
+    event BaseURIset(address indexed operator, string baseURI);
 
-    event UserURISet(address indexed caller, address indexed to, uint256 id, string userURI);
+    event UserURISet(address indexed operator, address indexed to, uint256 id, string uuri);
 
-    event MintFeeSet(address indexed caller, uint256 mintFee);
+    event MintFeeSet(address indexed operator, uint256 mintFee);
 
     /// -----------------------------------------------------------------------
     /// Struct Storage/Logic
@@ -524,17 +524,17 @@ contract Struct is ERC1155Votes, Multicall {
 
     mapping(address => bool) public manager;
 
-    mapping(uint256 => bool) public registered;
+    mapping(uint256 => bool) private registered;
 
-    mapping(uint256 => bool) public paused;
+    mapping(uint256 => bool) public transferable;
 
-    mapping(uint256 => bool) public tokenPermissioned;
+    mapping(uint256 => bool) public permissioned;
 
     mapping(address => mapping(uint256 => bool)) public userPermissioned;
 
-    mapping(uint256 => string) private tokenURIs;
+    mapping(uint256 => string) private uris;
 
-    mapping(address => mapping(uint256 => string)) public userURIs;
+    mapping(address => mapping(uint256 => string)) public userURI;
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "NOT_ADMIN");
@@ -549,8 +549,10 @@ contract Struct is ERC1155Votes, Multicall {
     }
 
     function uri(uint256 id) public view override returns (string memory) {
-        if (bytes(tokenURIs[id]).length == 0) return baseURI;
-        else return tokenURIs[id];
+        string memory tokenURI = uris[id];
+
+        if (bytes(tokenURI).length == 0) return baseURI;
+        else return tokenURI;
     }
 
     /// -----------------------------------------------------------------------
@@ -635,7 +637,7 @@ contract Struct is ERC1155Votes, Multicall {
         string calldata tokenURI,
         address owner
     ) external payable {
-        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
+        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
 
         if (!registered[id]) registered[id] = true;
 
@@ -653,7 +655,7 @@ contract Struct is ERC1155Votes, Multicall {
         uint256 id,
         uint256 amount
     ) external payable {
-        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id] , "NOT_AUTHORIZED");
+        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
 
         __burn(from, id, amount);
     }
@@ -662,16 +664,16 @@ contract Struct is ERC1155Votes, Multicall {
     /// Owner Functions
     /// -----------------------------------------------------------------------
 
-    function setTokenPause(uint256 id, bool pause) external payable onlyOwnerOfOrAdmin(id) {
-        paused[id] = pause;
+    function setTransferability(uint256 id, bool transferability) external payable onlyOwnerOfOrAdmin(id) {
+        transferable[id] = transferability;
 
-        emit TokenPauseSet(msg.sender, id, pause);
+        emit TransferabilitySet(msg.sender, id, transferability);
     }
 
-    function setTokenPermission(uint256 id, bool permission) external payable onlyOwnerOfOrAdmin(id) {
-        tokenPermissioned[id] = permission;
+    function setPermission(uint256 id, bool permission) external payable onlyOwnerOfOrAdmin(id) {
+        permissioned[id] = permission;
 
-        emit TokenPermissionSet(msg.sender, id, permission);
+        emit PermissionSet(msg.sender, id, permission);
     }
 
     function setUserPermission(
@@ -684,8 +686,8 @@ contract Struct is ERC1155Votes, Multicall {
         emit UserPermissionSet(msg.sender, to, id, permission);
     }
 
-    function setTokenURI(uint256 id, string calldata tokenURI) external payable onlyOwnerOfOrAdmin(id) {
-        tokenURIs[id] = tokenURI;
+    function setURI(uint256 id, string calldata tokenURI) external payable onlyOwnerOfOrAdmin(id) {
+        uris[id] = tokenURI;
 
         emit URI(tokenURI, id);
     }
@@ -693,11 +695,11 @@ contract Struct is ERC1155Votes, Multicall {
     function setUserURI(
         address to, 
         uint256 id, 
-        string calldata userURI
+        string calldata uuri
     ) external payable onlyOwnerOfOrAdmin(id) {
-        userURIs[to][id] = userURI;
+        userURI[to][id] = uuri;
 
-        emit UserURISet(msg.sender, to, id, userURI);
+        emit UserURISet(msg.sender, to, id, uuri);
     }
 
     function setOwnerOf(address to, uint256 id)
@@ -775,9 +777,9 @@ contract Struct is ERC1155Votes, Multicall {
     ) public override {
         super.safeTransferFrom(from, to, id, amount, data);
 
-        require(!paused[id], "PAUSED");
+        require(transferable[id], "NONTRANSFERABLE");
 
-        if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
+        if (permissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
 
         _moveDelegates(delegates(from, id), delegates(to, id), id, amount);
     }
@@ -799,9 +801,9 @@ contract Struct is ERC1155Votes, Multicall {
             id = ids[i];
             amount = amounts[i];
 
-            require(!paused[id], "PAUSED");
+            require(transferable[id], "NONTRANSFERABLE");
 
-            if (tokenPermissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
+            if (permissioned[id]) require(userPermissioned[from][id] && userPermissioned[to][id], "NOT_PERMITTED");
 
             _moveDelegates(delegates(from, id), delegates(to, id), id, amount);
 
@@ -829,7 +831,7 @@ contract Struct is ERC1155Votes, Multicall {
         _moveDelegates(address(0), delegates(to, id), id, amount);
 
         if (bytes(tokenURI).length != 0) {
-            tokenURIs[id] = tokenURI;
+            uris[id] = tokenURI;
 
             emit URI(tokenURI, id);
         }
@@ -851,7 +853,7 @@ contract Struct is ERC1155Votes, Multicall {
 /// @notice Factory to deploy ricardian contracts.
 contract StructsRegistry is Multicall {
     event StructRegistered(
-        address indexed struct, 
+        address indexed structure, 
         string name, 
         string symbol, 
         string baseURI, 
@@ -866,7 +868,7 @@ contract StructsRegistry is Multicall {
         uint256 _mintFee,
         address _admin
     ) external payable {
-        address struct = address(
+        address structure = address(
             new Struct{salt: keccak256(bytes(_name))}(
                 _name,
                 _symbol,
@@ -877,7 +879,7 @@ contract StructsRegistry is Multicall {
         );
 
         emit StructRegistered(
-            struct, 
+            structure, 
             _name, 
             _symbol, 
             _baseURI, 
