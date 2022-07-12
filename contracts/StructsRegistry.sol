@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
 /// @notice Minimalist and gas efficient standard ERC1155 implementation.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
-abstract contract ERC1155 {
+/// @author Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
+abstract contract ERC1155VotesBase {
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -153,9 +153,13 @@ abstract contract ERC1155 {
         address to,
         uint256 id,
         uint256 amount,
-        bytes memory data
+        bytes calldata data
     ) internal virtual {
-        balanceOf[to][id] += amount;
+        // Cannot overflow because the sum of all user
+        // balances can't exceed the max uint192 value. 
+        unchecked {
+            balanceOf[to][id] += amount;
+        }
 
         emit TransferSingle(msg.sender, address(0), to, id, amount);
 
@@ -166,59 +170,6 @@ abstract contract ERC1155 {
                 "UNSAFE_RECIPIENT"
             );
         } else require(to != address(0), "INVALID_RECIPIENT");
-    }
-
-    function _batchMint(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal virtual {
-        uint256 idsLength = ids.length; // Saves MLOADs.
-
-        require(idsLength == amounts.length, "LENGTH_MISMATCH");
-
-        for (uint256 i = 0; i < idsLength; ) {
-            balanceOf[to][ids[i]] += amounts[i];
-
-            // An array can't have a total length
-            // larger than the max uint256 value.
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit TransferBatch(msg.sender, address(0), to, ids, amounts);
-
-        if (to.code.length != 0) {
-            require(
-                ERC1155TokenReceiver(to).onERC1155BatchReceived(msg.sender, address(0), ids, amounts, data) ==
-                    ERC1155TokenReceiver.onERC1155BatchReceived.selector,
-                "UNSAFE_RECIPIENT"
-            );
-        } else require(to != address(0), "INVALID_RECIPIENT");
-    }
-
-    function _batchBurn(
-        address from,
-        uint256[] memory ids,
-        uint256[] memory amounts
-    ) internal virtual {
-        uint256 idsLength = ids.length; // Saves MLOADs.
-
-        require(idsLength == amounts.length, "LENGTH_MISMATCH");
-
-        for (uint256 i = 0; i < idsLength; ) {
-            balanceOf[from][ids[i]] -= amounts[i];
-
-            // An array can't have a total length
-            // larger than the max uint256 value.
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit TransferBatch(msg.sender, from, address(0), ids, amounts);
     }
 
     function _burn(
@@ -258,7 +209,7 @@ abstract contract ERC1155TokenReceiver {
 
 /// @notice Compound-like voting extension for ERC1155.
 /// @author KaliCo LLC
-abstract contract ERC1155Votes is ERC1155 {
+abstract contract ERC1155Votes is ERC1155VotesBase {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
@@ -280,6 +231,8 @@ abstract contract ERC1155Votes is ERC1155 {
     /// -----------------------------------------------------------------------
     /// Voting Storage
     /// -----------------------------------------------------------------------
+
+    mapping(uint256 => uint256) public totalSupply;
      
     mapping(address => mapping(uint256 => address)) internal _delegates;
 
@@ -302,7 +255,7 @@ abstract contract ERC1155Votes is ERC1155 {
         return current == address(0) ? account : current;
     }
 
-    function getCurrentVotes(address account, uint256 id) external view returns (uint256) {
+    function getCurrentVotes(address account, uint256 id) public view returns (uint256) {
         // Won't underflow because decrement only occurs if positive `nCheckpoints`.
         unchecked {
             uint256 nCheckpoints = numCheckpoints[account][id];
@@ -380,9 +333,14 @@ abstract contract ERC1155Votes is ERC1155 {
             if (srcRep != address(0)) {
                 uint256 srcRepNum = numCheckpoints[srcRep][id];
 
-                uint256 srcRepOld = srcRepNum != 0
-                    ? checkpoints[srcRep][id][srcRepNum - 1].votes
-                    : 0;
+                uint256 srcRepOld;
+
+                // Won't underflow because decrement only occurs if positive `srcRepNum`.
+                unchecked {
+                    srcRepOld = srcRepNum != 0
+                        ? checkpoints[srcRep][id][srcRepNum - 1].votes
+                        : 0;
+                }
 
                 _writeCheckpoint(srcRep, id, srcRepNum, srcRepOld, srcRepOld - amount);
             }
@@ -390,9 +348,14 @@ abstract contract ERC1155Votes is ERC1155 {
             if (dstRep != address(0)) {
                 uint256 dstRepNum = numCheckpoints[dstRep][id];
 
-                uint256 dstRepOld = dstRepNum != 0
-                    ? checkpoints[dstRep][id][dstRepNum - 1].votes
-                    : 0;
+                uint256 dstRepOld;
+
+                // Won't underflow because decrement only occurs if positive `dstRepNum`.
+                unchecked {
+                    dstRepOld = dstRepNum != 0
+                        ? checkpoints[dstRep][id][dstRepNum - 1].votes
+                        : 0;
+                }
 
                 _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
             }
@@ -826,7 +789,11 @@ contract Struct is ERC1155Votes, Multicall {
         bytes calldata data,
         string calldata tokenURI
     ) internal {
+        totalSupply[id] += amount;
+
         _mint(to, id, amount, data);
+
+        safeCastTo192(totalSupply[id]);
 
         _moveDelegates(address(0), delegates(to, id), id, amount);
 
@@ -843,6 +810,12 @@ contract Struct is ERC1155Votes, Multicall {
         uint256 amount
     ) internal {
         _burn(from, id, amount);
+
+        // Cannot underflow because a user's balance
+        // will never be larger than the total supply.
+        unchecked {
+            totalSupply[id] -= amount;
+        }
 
         _moveDelegates(delegates(from, id), address(0), id, amount);
     }
