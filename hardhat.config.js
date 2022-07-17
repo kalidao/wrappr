@@ -65,7 +65,7 @@ module.exports = {
     ],
   },
   xdeploy: {
-    contract: "RicardianRegistry",
+    contract: "WrapprRegistry",
     constructorArgsPath: "./deploy-args.js",
     salt: "KALI",
     signer: process.env.PRIVATE_KEY,
