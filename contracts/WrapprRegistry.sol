@@ -443,10 +443,10 @@ abstract contract Multicall {
     }
 }
 
-/// @title Struct
+/// @title Wrappr
 /// @author KaliCo LLC
 /// @notice Ricardian contract for on-chain entities.
-contract Struct is ERC1155Votes, Multicall {
+contract Wrappr is ERC1155Votes, Multicall {
     /// -----------------------------------------------------------------------
     /// Events
     /// -----------------------------------------------------------------------
@@ -470,7 +470,7 @@ contract Struct is ERC1155Votes, Multicall {
     event MintFeeSet(address indexed operator, uint256 mintFee);
 
     /// -----------------------------------------------------------------------
-    /// Struct Storage/Logic
+    /// Wrappr Storage/Logic
     /// -----------------------------------------------------------------------
 
     string public name;
@@ -821,11 +821,11 @@ contract Struct is ERC1155Votes, Multicall {
     }
 }
 
-/// @title Structs Registry
+/// @title Wrappr Registry
 /// @author KaliCo LLC
 /// @notice Factory to deploy ricardian contracts.
-contract StructsRegistry is Multicall {
-    event StructRegistered(
+contract WrapprRegistry is Multicall {
+    event WrapprRegistered(
         address indexed structure, 
         string name, 
         string symbol, 
@@ -834,7 +834,7 @@ contract StructsRegistry is Multicall {
         address indexed admin
     );
 
-    function registerStruct(
+    function registerWrappr(
         string calldata _name,
         string calldata _symbol,
         string calldata _baseURI,
@@ -842,7 +842,7 @@ contract StructsRegistry is Multicall {
         address _admin
     ) external payable {
         address structure = address(
-            new Struct{salt: keccak256(bytes(_name))}(
+            new Wrappr{salt: keccak256(bytes(_name))}(
                 _name,
                 _symbol,
                 _baseURI,
@@ -851,7 +851,7 @@ contract StructsRegistry is Multicall {
             )
         );
 
-        emit StructRegistered(
+        emit WrapprRegistered(
             structure, 
             _name, 
             _symbol, 
