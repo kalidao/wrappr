@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-/// @notice Minimalist and gas efficient standard ERC-1155 implementation designed for Compound-like voting.
+/// @notice Minimalist and gas efficient standard ERC-1155 implementation with supply tracking.
 /// @author Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
-abstract contract ERC1155VotesBase {
+abstract contract ERC1155 {
     /// -----------------------------------------------------------------------
     /// EVENTS
     /// -----------------------------------------------------------------------
@@ -31,6 +31,8 @@ abstract contract ERC1155VotesBase {
     /// -----------------------------------------------------------------------
     /// ERC-1155 STORAGE
     /// -----------------------------------------------------------------------
+    
+    mapping(uint256 => uint256) public totalSupply;
 
     mapping(address => mapping(uint256 => uint256)) public balanceOf;
 
@@ -62,7 +64,12 @@ abstract contract ERC1155VotesBase {
         require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
 
         balanceOf[from][id] -= amount;
-        balanceOf[to][id] += amount;
+        
+        // Cannot overflow because the sum of all user
+        // balances can't exceed the max uint256 value.
+        unchecked {
+            balanceOf[to][id] += amount;
+        }
 
         emit TransferSingle(msg.sender, from, to, id, amount);
 
@@ -95,7 +102,12 @@ abstract contract ERC1155VotesBase {
             amount = amounts[i];
 
             balanceOf[from][id] -= amount;
-            balanceOf[to][id] += amount;
+            
+            // Cannot overflow because the sum of all user
+            // balances can't exceed the max uint256 value.
+            unchecked {
+                balanceOf[to][id] += amount;
+            }
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -155,8 +167,10 @@ abstract contract ERC1155VotesBase {
         uint256 amount,
         bytes calldata data
     ) internal virtual {
+        totalSupply[id] += amount;
+        
         // Cannot overflow because the sum of all user
-        // balances can't exceed the max uint192 value. 
+        // balances can't exceed the max uint256 value. 
         unchecked {
             balanceOf[to][id] += amount;
         }
@@ -178,6 +192,12 @@ abstract contract ERC1155VotesBase {
         uint256 amount
     ) internal virtual {
         balanceOf[from][id] -= amount;
+        
+        // Cannot underflow because a user's balance
+        // will never be larger than the total supply.
+        unchecked {
+            totalSupply[id] -= amount;
+        }
 
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
@@ -209,7 +229,7 @@ abstract contract ERC1155TokenReceiver {
 
 /// @notice Compound-like voting extension for ERC-1155.
 /// @author KaliCo LLC
-abstract contract ERC1155Votes is ERC1155VotesBase {
+abstract contract ERC1155Votes is ERC1155 {
     /// -----------------------------------------------------------------------
     /// EVENTS
     /// -----------------------------------------------------------------------
@@ -231,8 +251,6 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
     /// -----------------------------------------------------------------------
     /// VOTING STORAGE
     /// -----------------------------------------------------------------------
-
-    mapping(uint256 => uint256) public totalSupply;
      
     mapping(address => mapping(uint256 => address)) internal _delegates;
 
@@ -793,8 +811,6 @@ contract Wrappr is ERC1155Votes, Multicall {
         bytes calldata data,
         string calldata tokenURI
     ) internal virtual {
-        totalSupply[id] += amount;
-
         _mint(to, id, amount, data);
 
         safeCastTo192(totalSupply[id]);
@@ -814,12 +830,6 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256 amount
     ) internal virtual {
         _burn(from, id, amount);
-
-        // Cannot underflow because a user's balance
-        // will never be larger than the total supply.
-        unchecked {
-            totalSupply[id] -= amount;
-        }
 
         _moveDelegates(delegates(from, id), address(0), id, amount);
     }
