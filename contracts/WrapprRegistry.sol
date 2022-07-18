@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-/// @notice Minimalist and gas efficient standard ERC1155 implementation.
+/// @notice Minimalist and gas efficient standard ERC-1155 implementation designed for Compound-like voting.
 /// @author Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155VotesBase {
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// EVENTS
+    /// -----------------------------------------------------------------------
 
     event TransferSingle(
         address indexed operator,
@@ -28,23 +28,23 @@ abstract contract ERC1155VotesBase {
 
     event URI(string value, uint256 indexed id);
 
-    /*//////////////////////////////////////////////////////////////
-                             ERC1155 STORAGE
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// ERC-1155 STORAGE
+    /// -----------------------------------------------------------------------
 
     mapping(address => mapping(uint256 => uint256)) public balanceOf;
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
-    /*//////////////////////////////////////////////////////////////
-                             METADATA LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// METADATA LOGIC
+    /// -----------------------------------------------------------------------
 
     function uri(uint256 id) public view virtual returns (string memory);
 
-    /*//////////////////////////////////////////////////////////////
-                              ERC1155 LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// ERC-1155 LOGIC
+    /// -----------------------------------------------------------------------
 
     function setApprovalForAll(address operator, bool approved) public virtual {
         isApprovedForAll[msg.sender][operator] = approved;
@@ -134,20 +134,20 @@ abstract contract ERC1155VotesBase {
         }
     }
 
-    /*//////////////////////////////////////////////////////////////
-                              ERC165 LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// ERC-165 LOGIC
+    /// -----------------------------------------------------------------------
 
     function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
         return
-            interfaceId == 0x01ffc9a7 || // ERC165 Interface ID for ERC165
-            interfaceId == 0xd9b67a26 || // ERC165 Interface ID for ERC1155
-            interfaceId == 0x0e89341c; // ERC165 Interface ID for ERC1155MetadataURI
+            interfaceId == 0x01ffc9a7 || // ERC-165 Interface ID for ERC-165
+            interfaceId == 0xd9b67a26 || // ERC-165 Interface ID for ERC-1155
+            interfaceId == 0x0e89341c; // ERC-165 Interface ID for ERC1155MetadataURI
     }
 
-    /*//////////////////////////////////////////////////////////////
-                        INTERNAL MINT/BURN LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// INTERNAL MINT/BURN LOGIC
+    /// -----------------------------------------------------------------------
 
     function _mint(
         address to,
@@ -207,11 +207,11 @@ abstract contract ERC1155TokenReceiver {
     }
 }
 
-/// @notice Compound-like voting extension for ERC1155.
+/// @notice Compound-like voting extension for ERC-1155.
 /// @author KaliCo LLC
 abstract contract ERC1155Votes is ERC1155VotesBase {
     /// -----------------------------------------------------------------------
-    /// Events
+    /// EVENTS
     /// -----------------------------------------------------------------------
 
     event DelegateChanged(
@@ -229,7 +229,7 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
     );
 
     /// -----------------------------------------------------------------------
-    /// Voting Storage
+    /// VOTING STORAGE
     /// -----------------------------------------------------------------------
 
     mapping(uint256 => uint256) public totalSupply;
@@ -246,16 +246,16 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
     }
 
     /// -----------------------------------------------------------------------
-    /// Delegation Logic
+    /// DELEGATION LOGIC
     /// -----------------------------------------------------------------------
 
-    function delegates(address account, uint256 id) public view returns (address) {
+    function delegates(address account, uint256 id) public view virtual returns (address) {
         address current = _delegates[account][id];
 
         return current == address(0) ? account : current;
     }
 
-    function getCurrentVotes(address account, uint256 id) public view returns (uint256) {
+    function getCurrentVotes(address account, uint256 id) public view virtual returns (uint256) {
         // Won't underflow because decrement only occurs if positive `nCheckpoints`.
         unchecked {
             uint256 nCheckpoints = numCheckpoints[account][id];
@@ -272,8 +272,9 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
         uint256 id,
         uint256 timestamp
     )
-        external
+        public
         view
+        virtual
         returns (uint256)
     {
         require(block.timestamp > timestamp, "UNDETERMINED");
@@ -313,7 +314,7 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
         }
     }
 
-    function delegate(address delegatee, uint256 id) external payable {
+    function delegate(address delegatee, uint256 id) public payable virtual {
         address currentDelegate = delegates(msg.sender, id);
 
         _delegates[msg.sender][id] = delegatee;
@@ -328,7 +329,7 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
         address dstRep,
         uint256 id,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         if (srcRep != dstRep && amount != 0) {
             if (srcRep != address(0)) {
                 uint256 srcRepNum = numCheckpoints[srcRep][id];
@@ -348,16 +349,14 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
             if (dstRep != address(0)) {
                 uint256 dstRepNum = numCheckpoints[dstRep][id];
 
-                uint256 dstRepOld;
-
                 // Won't underflow because decrement only occurs if positive `dstRepNum`.
                 unchecked {
-                    dstRepOld = dstRepNum != 0
+                    uint256 dstRepOld = dstRepNum != 0
                         ? checkpoints[dstRep][id][dstRepNum - 1].votes
                         : 0;
+                    
+                     _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
                 }
-
-                _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
             }
         }
     }
@@ -368,7 +367,7 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
         uint256 nCheckpoints,
         uint256 oldVotes,
         uint256 newVotes
-    ) internal {
+    ) internal virtual {
         unchecked {
             uint64 timestamp = safeCastTo64(block.timestamp);
 
@@ -395,13 +394,13 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
         emit DelegateVotesChanged(delegatee, id, oldVotes, newVotes);
     }
 
-    function safeCastTo64(uint256 x) internal pure returns (uint64 y) {
+    function safeCastTo64(uint256 x) internal pure virtual returns (uint64 y) {
         require(x < 1 << 64);
 
         y = uint64(x);
     }
 
-    function safeCastTo192(uint256 x) internal pure returns (uint192 y) {
+    function safeCastTo192(uint256 x) internal pure virtual returns (uint192 y) {
         require(x < 1 << 192);
 
         y = uint192(x);
@@ -412,7 +411,8 @@ abstract contract ERC1155Votes is ERC1155VotesBase {
 /// @author Modified from Uniswap (https://github.com/Uniswap/v3-periphery/blob/main/contracts/base/Multicall.sol)
 abstract contract Multicall {
     function multicall(bytes[] calldata data)
-        external
+        public
+        virtual
         returns (bytes[] memory results)
     {
         results = new bytes[](data.length);
@@ -445,10 +445,10 @@ abstract contract Multicall {
 
 /// @title Wrappr
 /// @author KaliCo LLC
-/// @notice Ricardian contract for on-chain entities.
+/// @notice Ricardian contract for on-chain structures.
 contract Wrappr is ERC1155Votes, Multicall {
     /// -----------------------------------------------------------------------
-    /// Events
+    /// EVENTS
     /// -----------------------------------------------------------------------
 
     event OwnerOfSet(address indexed operator, address indexed to, uint256 id);
@@ -465,21 +465,21 @@ contract Wrappr is ERC1155Votes, Multicall {
 
     event BaseURIset(address indexed operator, string baseURI);
 
-    event UserURISet(address indexed operator, address indexed to, uint256 id, string uuri);
+    event UserURIset(address indexed operator, address indexed to, uint256 id, string uuri);
 
     event MintFeeSet(address indexed operator, uint256 mintFee);
 
     /// -----------------------------------------------------------------------
-    /// Wrappr Storage/Logic
+    /// WRAPPR STORAGE/LOGIC
     /// -----------------------------------------------------------------------
 
     string public name;
 
     string public symbol;
 
-    string private baseURI;
+    string internal baseURI;
 
-    uint256 private mintFee;
+    uint256 internal mintFee;
 
     address public admin;
 
@@ -487,7 +487,7 @@ contract Wrappr is ERC1155Votes, Multicall {
 
     mapping(address => bool) public manager;
 
-    mapping(uint256 => bool) private registered;
+    mapping(uint256 => bool) internal registered;
 
     mapping(uint256 => bool) public transferable;
 
@@ -495,23 +495,23 @@ contract Wrappr is ERC1155Votes, Multicall {
 
     mapping(address => mapping(uint256 => bool)) public userPermissioned;
 
-    mapping(uint256 => string) private uris;
+    mapping(uint256 => string) internal uris;
 
     mapping(address => mapping(uint256 => string)) public userURI;
 
-    modifier onlyAdmin() {
+    modifier onlyAdmin() virtual {
         require(msg.sender == admin, "NOT_ADMIN");
 
         _;
     }
 
-    modifier onlyOwnerOfOrAdmin(uint256 id) {
+    modifier onlyOwnerOfOrAdmin(uint256 id) virtual {
         require(msg.sender == ownerOf[id] || msg.sender == admin, "NOT_AUTHORIZED");
 
         _;
     }
 
-    function uri(uint256 id) public view override returns (string memory) {
+    function uri(uint256 id) public view override virtual returns (string memory) {
         string memory tokenURI = uris[id];
 
         if (bytes(tokenURI).length == 0) return baseURI;
@@ -519,7 +519,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Constructor
+    /// CONSTRUCTOR
     /// -----------------------------------------------------------------------
 
     constructor(
@@ -547,7 +547,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Public Functions
+    /// PUBLIC FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function mint(
@@ -557,7 +557,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         bytes calldata data,
         string calldata tokenURI,
         address owner
-    ) external payable {
+    ) public payable virtual {
         uint256 fee = mintFee;
 
         if (fee != 0) require(msg.value == fee, "NOT_FEE");
@@ -579,7 +579,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         address from, 
         uint256 id, 
         uint256 amount
-    ) external payable {
+    ) public payable virtual {
         require(
             msg.sender == from || isApprovedForAll[from][msg.sender],
             "NOT_AUTHORIZED"
@@ -589,7 +589,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Management Functions
+    /// MANAGEMENT FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function manageMint(
@@ -599,7 +599,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         bytes calldata data,
         string calldata tokenURI,
         address owner
-    ) external payable {
+    ) public payable virtual {
         require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
 
         if (!registered[id]) registered[id] = true;
@@ -617,23 +617,23 @@ contract Wrappr is ERC1155Votes, Multicall {
         address from,
         uint256 id,
         uint256 amount
-    ) external payable {
+    ) public payable virtual {
         require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
 
         __burn(from, id, amount);
     }
 
     /// -----------------------------------------------------------------------
-    /// Owner Functions
+    /// OWNER FUNCTIONS
     /// -----------------------------------------------------------------------
 
-    function setTransferability(uint256 id, bool transferability) external payable onlyOwnerOfOrAdmin(id) {
+    function setTransferability(uint256 id, bool transferability) public payable onlyOwnerOfOrAdmin(id) virtual {
         transferable[id] = transferability;
 
         emit TransferabilitySet(msg.sender, id, transferability);
     }
 
-    function setPermission(uint256 id, bool permission) external payable onlyOwnerOfOrAdmin(id) {
+    function setPermission(uint256 id, bool permission) public payable onlyOwnerOfOrAdmin(id) virtual {
         permissioned[id] = permission;
 
         emit PermissionSet(msg.sender, id, permission);
@@ -643,13 +643,13 @@ contract Wrappr is ERC1155Votes, Multicall {
         address to, 
         uint256 id, 
         bool permission
-    ) external payable onlyOwnerOfOrAdmin(id) {
+    ) public payable onlyOwnerOfOrAdmin(id) virtual {
         userPermissioned[to][id] = permission;
 
         emit UserPermissionSet(msg.sender, to, id, permission);
     }
 
-    function setURI(uint256 id, string calldata tokenURI) external payable onlyOwnerOfOrAdmin(id) {
+    function setURI(uint256 id, string calldata tokenURI) public payable onlyOwnerOfOrAdmin(id) virtual {
         uris[id] = tokenURI;
 
         emit URI(tokenURI, id);
@@ -659,16 +659,17 @@ contract Wrappr is ERC1155Votes, Multicall {
         address to, 
         uint256 id, 
         string calldata uuri
-    ) external payable onlyOwnerOfOrAdmin(id) {
+    ) public payable onlyOwnerOfOrAdmin(id) virtual {
         userURI[to][id] = uuri;
 
-        emit UserURISet(msg.sender, to, id, uuri);
+        emit UserURIset(msg.sender, to, id, uuri);
     }
 
     function setOwnerOf(address to, uint256 id)
-        external
+        public
         payable
         onlyOwnerOfOrAdmin(id)
+        virtual
     {
         ownerOf[id] = to;
 
@@ -676,13 +677,14 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Admin Functions
+    /// ADMIN FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function setManager(address to, bool approval)
-        external
+        public
         payable
         onlyAdmin
+        virtual
     {
         manager[to] = approval;
 
@@ -690,25 +692,27 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     function setBaseURI(string calldata _baseURI)
-        external
+        public
         payable
         onlyAdmin
+        virtual
     {
         baseURI = _baseURI;
 
         emit BaseURIset(msg.sender, _baseURI);
     }
 
-    function setMintFee(uint256 _mintFee) external payable onlyAdmin {
+    function setMintFee(uint256 _mintFee) public payable onlyAdmin virtual {
         mintFee = _mintFee;
 
         emit MintFeeSet(msg.sender, _mintFee);
     }
 
     function claimFee(address to, uint256 amount)
-        external
+        public
         payable
         onlyAdmin
+        virtual
     {
         assembly {
             if iszero(call(gas(), to, amount, 0, 0, 0, 0)) {
@@ -721,7 +725,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         }
     }
 
-    function setAdmin(address to) external payable onlyAdmin {
+    function setAdmin(address to) public payable onlyAdmin virtual {
         admin = to;
 
         emit AdminSet(msg.sender, to);
@@ -737,7 +741,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256 id,
         uint256 amount,
         bytes calldata data
-    ) public override {
+    ) public override virtual {
         super.safeTransferFrom(from, to, id, amount, data);
 
         require(transferable[id], "NONTRANSFERABLE");
@@ -753,7 +757,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256[] calldata ids,
         uint256[] calldata amounts,
         bytes calldata data
-    ) public override {
+    ) public override virtual {
         super.safeBatchTransferFrom(from, to, ids, amounts, data);
 
         // Storing these outside the loop saves ~15 gas per iteration.
@@ -788,7 +792,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256 amount,
         bytes calldata data,
         string calldata tokenURI
-    ) internal {
+    ) internal virtual {
         totalSupply[id] += amount;
 
         _mint(to, id, amount, data);
@@ -808,7 +812,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         address from,
         uint256 id,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         _burn(from, id, amount);
 
         // Cannot underflow because a user's balance
