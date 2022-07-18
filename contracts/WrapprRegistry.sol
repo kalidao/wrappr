@@ -203,7 +203,7 @@ abstract contract ERC1155 {
     }
 }
 
-/// @notice A generic interface for a contract which properly accepts ERC1155 tokens.
+/// @notice A generic interface for a contract which properly accepts ERC-1155 tokens.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155TokenReceiver {
     function onERC1155Received(
