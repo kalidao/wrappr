@@ -332,7 +332,7 @@ abstract contract ERC1155Votes is ERC1155 {
         }
     }
 
-    function delegate(address delegatee, uint256 id) public payable virtual {
+    function delegate(address delegatee, uint256 id) public virtual {
         address currentDelegate = delegates(msg.sender, id);
 
         _delegates[msg.sender][id] = delegatee;
@@ -366,15 +366,17 @@ abstract contract ERC1155Votes is ERC1155 {
 
             if (dstRep != address(0)) {
                 uint256 dstRepNum = numCheckpoints[dstRep][id];
+                
+                uint256 dstRepOld;
 
                 // Won't underflow because decrement only occurs if positive `dstRepNum`.
                 unchecked {
-                    uint256 dstRepOld = dstRepNum != 0
+                    dstRepOld = dstRepNum != 0
                         ? checkpoints[dstRep][id][dstRepNum - 1].votes
                         : 0;
-                    
-                     _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
                 }
+                    
+                _writeCheckpoint(dstRep, id, dstRepNum, dstRepOld, dstRepOld + amount);
             }
         }
     }
@@ -618,7 +620,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         string calldata tokenURI,
         address owner
     ) public payable virtual {
-        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
+        require(msg.sender == ownerOf[id] || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
 
         if (!registered[id]) registered[id] = true;
 
@@ -636,7 +638,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256 id,
         uint256 amount
     ) public payable virtual {
-        require(manager[msg.sender] || msg.sender == admin || msg.sender == ownerOf[id], "NOT_AUTHORIZED");
+        require(msg.sender == ownerOf[id] || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
 
         __burn(from, id, amount);
     }
@@ -644,6 +646,17 @@ contract Wrappr is ERC1155Votes, Multicall {
     /// -----------------------------------------------------------------------
     /// OWNER FUNCTIONS
     /// -----------------------------------------------------------------------
+    
+    function setOwnerOf(address to, uint256 id)
+        public
+        payable
+        onlyOwnerOfOrAdmin(id)
+        virtual
+    {
+        ownerOf[id] = to;
+
+        emit OwnerOfSet(msg.sender, to, id);
+    }
 
     function setTransferability(uint256 id, bool transferability) public payable onlyOwnerOfOrAdmin(id) virtual {
         transferable[id] = transferability;
@@ -683,17 +696,6 @@ contract Wrappr is ERC1155Votes, Multicall {
         emit UserURIset(msg.sender, to, id, uuri);
     }
 
-    function setOwnerOf(address to, uint256 id)
-        public
-        payable
-        onlyOwnerOfOrAdmin(id)
-        virtual
-    {
-        ownerOf[id] = to;
-
-        emit OwnerOfSet(msg.sender, to, id);
-    }
-
     /// -----------------------------------------------------------------------
     /// ADMIN FUNCTIONS
     /// -----------------------------------------------------------------------
@@ -707,6 +709,12 @@ contract Wrappr is ERC1155Votes, Multicall {
         manager[to] = approval;
 
         emit ManagerSet(msg.sender, to, approval);
+    }
+    
+    function setAdmin(address to) public payable onlyAdmin virtual {
+        admin = to;
+
+        emit AdminSet(msg.sender, to);
     }
 
     function setBaseURI(string calldata _baseURI)
@@ -741,12 +749,6 @@ contract Wrappr is ERC1155Votes, Multicall {
                 revert(0x00, 0x64) // Revert with (offset, size).
             }
         }
-    }
-
-    function setAdmin(address to) public payable onlyAdmin virtual {
-        admin = to;
-
-        emit AdminSet(msg.sender, to);
     }
 
     /// -----------------------------------------------------------------------
@@ -840,7 +842,7 @@ contract Wrappr is ERC1155Votes, Multicall {
 /// @notice Factory to deploy ricardian contracts.
 contract WrapprRegistry is Multicall {
     event WrapprRegistered(
-        address indexed structure, 
+        address indexed wrappr, 
         string name, 
         string symbol, 
         string baseURI, 
@@ -855,7 +857,7 @@ contract WrapprRegistry is Multicall {
         uint256 _mintFee,
         address _admin
     ) external payable {
-        address structure = address(
+        address wrappr = address(
             new Wrappr{salt: keccak256(bytes(_name))}(
                 _name,
                 _symbol,
@@ -866,7 +868,7 @@ contract WrapprRegistry is Multicall {
         );
 
         emit WrapprRegistered(
-            structure, 
+            wrappr, 
             _name, 
             _symbol, 
             _baseURI, 
