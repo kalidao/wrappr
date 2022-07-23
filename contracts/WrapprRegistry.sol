@@ -475,7 +475,7 @@ contract Wrappr is ERC1155Votes, Multicall {
 
     event ManagerSet(address indexed operator, address indexed to, bool approval);
 
-    event AdminSet(address indexed operator, address indexed to);
+    event AdminSet(address indexed operator, address indexed admin);
 
     event TransferabilitySet(address indexed operator, uint256 id, bool transferability);
 
@@ -711,10 +711,10 @@ contract Wrappr is ERC1155Votes, Multicall {
         emit ManagerSet(msg.sender, to, approval);
     }
     
-    function setAdmin(address to) public payable onlyAdmin virtual {
-        admin = to;
+    function setAdmin(address _admin) public payable onlyAdmin virtual {
+        admin = _admin;
 
-        emit AdminSet(msg.sender, to);
+        emit AdminSet(msg.sender, _admin);
     }
 
     function setBaseURI(string calldata _baseURI)
