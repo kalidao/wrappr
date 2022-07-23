@@ -3,11 +3,11 @@ pragma solidity >=0.8.0;
 
 import {Multicall, Wrappr} from "./Wrappr.sol";
 
-/// @title Wrappr Registry
+/// @title Wrappr Factory
 /// @author KaliCo LLC
 /// @notice Factory to deploy ricardian contracts.
-contract WrapprRegistry is Multicall {
-    event WrapprRegistered(
+contract WrapprFactory is Multicall {
+    event WrapprDeployed(
         address indexed wrappr, 
         string name, 
         string symbol, 
@@ -16,7 +16,7 @@ contract WrapprRegistry is Multicall {
         address indexed admin
     );
 
-    function registerWrappr(
+    function deployWrappr(
         string calldata _name,
         string calldata _symbol,
         string calldata _baseURI,
@@ -33,7 +33,7 @@ contract WrapprRegistry is Multicall {
             )
         );
 
-        emit WrapprRegistered(
+        emit WrapprDeployed(
             wrappr, 
             _name, 
             _symbol, 
