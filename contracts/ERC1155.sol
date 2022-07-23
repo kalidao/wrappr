@@ -47,6 +47,25 @@ abstract contract ERC1155 {
     /// -----------------------------------------------------------------------
     /// ERC-1155 LOGIC
     /// -----------------------------------------------------------------------
+    
+    function balanceOfBatch(address[] calldata owners, uint256[] calldata ids)
+        public
+        view
+        virtual
+        returns (uint256[] memory balances)
+    {
+        require(owners.length == ids.length, "LENGTH_MISMATCH");
+
+        balances = new uint256[](owners.length);
+
+        // Unchecked because the only math done is incrementing
+        // the array index counter which cannot possibly overflow.
+        unchecked {
+            for (uint256 i; i < owners.length; ++i) {
+                balances[i] = balanceOf[owners[i]][ids[i]];
+            }
+        }
+    }
 
     function setApprovalForAll(address operator, bool approved) public virtual {
         isApprovedForAll[msg.sender][operator] = approved;
@@ -125,25 +144,6 @@ abstract contract ERC1155 {
                 "UNSAFE_RECIPIENT"
             );
         } else require(to != address(0), "INVALID_RECIPIENT");
-    }
-
-    function balanceOfBatch(address[] calldata owners, uint256[] calldata ids)
-        public
-        view
-        virtual
-        returns (uint256[] memory balances)
-    {
-        require(owners.length == ids.length, "LENGTH_MISMATCH");
-
-        balances = new uint256[](owners.length);
-
-        // Unchecked because the only math done is incrementing
-        // the array index counter which cannot possibly overflow.
-        unchecked {
-            for (uint256 i; i < owners.length; ++i) {
-                balances[i] = balanceOf[owners[i]][ids[i]];
-            }
-        }
     }
 
     /// -----------------------------------------------------------------------
