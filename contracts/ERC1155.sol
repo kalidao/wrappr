@@ -1,6 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
+/// @notice A generic interface for a contract which properly accepts ERC-1155 tokens.
+/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
+abstract contract ERC1155TokenReceiver {
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external virtual returns (bytes4) {
+        return ERC1155TokenReceiver.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external virtual returns (bytes4) {
+        return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
+    }
+}
+
 /// @notice Minimalist and gas efficient standard ERC-1155 implementation with supply tracking.
 /// @author Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155 {
@@ -43,6 +67,17 @@ abstract contract ERC1155 {
     /// -----------------------------------------------------------------------
 
     function uri(uint256 id) public view virtual returns (string memory);
+    
+    /// -----------------------------------------------------------------------
+    /// ERC-165 LOGIC
+    /// -----------------------------------------------------------------------
+
+    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
+        return
+            interfaceId == 0x01ffc9a7 || // ERC-165 Interface ID for ERC-165
+            interfaceId == 0xd9b67a26 || // ERC-165 Interface ID for ERC-1155
+            interfaceId == 0x0e89341c; // ERC-165 Interface ID for ERC1155MetadataURI
+    }
 
     /// -----------------------------------------------------------------------
     /// ERC-1155 LOGIC
@@ -147,17 +182,6 @@ abstract contract ERC1155 {
     }
 
     /// -----------------------------------------------------------------------
-    /// ERC-165 LOGIC
-    /// -----------------------------------------------------------------------
-
-    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
-        return
-            interfaceId == 0x01ffc9a7 || // ERC-165 Interface ID for ERC-165
-            interfaceId == 0xd9b67a26 || // ERC-165 Interface ID for ERC-1155
-            interfaceId == 0x0e89341c; // ERC-165 Interface ID for ERC1155MetadataURI
-    }
-
-    /// -----------------------------------------------------------------------
     /// INTERNAL MINT/BURN LOGIC
     /// -----------------------------------------------------------------------
 
@@ -200,29 +224,5 @@ abstract contract ERC1155 {
         }
 
         emit TransferSingle(msg.sender, from, address(0), id, amount);
-    }
-}
-
-/// @notice A generic interface for a contract which properly accepts ERC-1155 tokens.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
-abstract contract ERC1155TokenReceiver {
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes calldata
-    ) external virtual returns (bytes4) {
-        return ERC1155TokenReceiver.onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] calldata,
-        uint256[] calldata,
-        bytes calldata
-    ) external virtual returns (bytes4) {
-        return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
     }
 }
