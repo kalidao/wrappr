@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.8.0;
-
 /// @notice Minimalist and gas efficient standard ERC-1155 implementation with supply tracking.
 /// @author Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC1155.sol)
 abstract contract ERC1155 {
