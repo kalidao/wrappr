@@ -2,9 +2,9 @@
 
 ```ml
  ├─ frontend - "React, nextjs, ethers, wagmi, rainbowkit"
- │─ backend - "subgraph scripts for Kali nodes on TheGraph network"
+ │─ backend - "Subgraph scripts for Kali nodes on TheGraph network"
  │─ contracts - "Solidity smart contracts, hardhat setup"
- │─ e2e-tests - "end-to-end full stack tests"
+ │─ e2e-tests - "End-to-end full stack tests"
 
 ```
 
