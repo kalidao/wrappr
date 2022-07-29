@@ -1,15 +1,11 @@
-# Basic Sample Hardhat Project
+# Repo Structure
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+```ml
+ ├─ frontend - "React, nextjs, ethers, wagmi, rainbowkit"
+ │─ backend - "subgraph scripts for Kali nodes on TheGraph network"
+ │─ contracts - "Solidity smart contracts, hardhat setup"
+ │─ e2e-tests - "end-to-end full stack tests"
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-node scripts/sample-script.js
-npx hardhat help
 ```
+
+Each of the above subdirectories has its own README file with additional information.
