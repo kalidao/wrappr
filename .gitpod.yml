@@ -12,7 +12,7 @@ tasks:
       cd contracts && yarn install && cd -
       gp sync-done build
     command: |
-      set -evx
+      # set -evx
       # shutdown any leftover containers from a previous session
       docker-compose down
       # start app modules
