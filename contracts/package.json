@@ -9,7 +9,8 @@
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "solhint": "solhint --config ./.solhint.json 'contracts/**/*.sol' --fix",
     "lint": "yarn run prettier && npm run solhint",
-    "deploy": "npx hardhat xdeploy"
+    "deploy": "npx hardhat xdeploy",
+    "start": "npx hardhat node"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.6",

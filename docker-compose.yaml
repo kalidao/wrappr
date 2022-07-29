@@ -1,0 +1,61 @@
+version: "3.9"
+
+networks:
+  kali-wrappr:
+    name: kali-wrappr
+
+services:
+  contracts:
+    command: yarn start
+    working_dir: /app/contracts
+    # restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kali-wrappr/dev
+    networks:
+      - kali-wrappr
+    volumes:
+      - ./contracts:/app/contracts
+  backend:
+    command: yarn start
+    container_name: backend
+    working_dir: /app/backend
+    ports:
+      - 3001:3001
+      - 9229:9229
+    # restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: deps
+    image: kali-wrappr/dev
+    networks:
+      - kali-wrappr
+    environment:
+      - DATA_DIR=/data
+      - LOG_LEVEL=info
+    volumes:
+      - ./backend:/app/backend
+  frontend:
+    command: yarn start
+    container_name: frontend
+    working_dir: /app/frontend
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+    # restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: deps
+    image: kali-wrappr/dev
+    networks:
+      - kali-wrappr
+    environment:
+      - DATA_DIR=/data
+      - LOG_LEVEL=info
+      - SUBGRAPH_API_URL=$SUBGRAPH_API_URL
+    volumes:
+      - ./frontend:/app/frontend
