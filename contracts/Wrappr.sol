@@ -356,7 +356,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
     ) internal virtual {
         _mint(to, id, amount, data);
 
-        safeCastTo216(totalSupply[id]);
+        _safeCastTo216(totalSupply[id]);
 
         _moveDelegates(address(0), delegates(to, id), id, amount);
 
