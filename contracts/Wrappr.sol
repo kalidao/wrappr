@@ -302,7 +302,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
         uint256 id,
         uint256 amount,
         bytes calldata data
-    ) public override virtual {
+    ) public payable override virtual {
         super.safeTransferFrom(from, to, id, amount, data);
 
         require(transferable[id], "NONTRANSFERABLE");
@@ -318,7 +318,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
         uint256[] calldata ids,
         uint256[] calldata amounts,
         bytes calldata data
-    ) public override virtual {
+    ) public payable override virtual {
         super.safeBatchTransferFrom(from, to, ids, amounts, data);
 
         // Storing these outside the loop saves ~15 gas per iteration.
