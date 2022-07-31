@@ -2,12 +2,12 @@
 pragma solidity >=0.8.0;
 
 import {ERC1155Votes} from "./ERC1155Votes.sol";
-import {Multicall} from "./Multicall.sol";
+import {Multicallable} from "./Multicallable.sol";
 
 /// @title Wrappr
 /// @author KaliCo LLC
 /// @notice Ricardian contract for on-chain structures.
-contract Wrappr is ERC1155Votes, Multicall {
+contract Wrappr is ERC1155Votes, Multicallable {
     /// -----------------------------------------------------------------------
     /// EVENTS
     /// -----------------------------------------------------------------------
