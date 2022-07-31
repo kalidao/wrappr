@@ -293,7 +293,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
     }
 
     /// -----------------------------------------------------------------------
-    /// Transfer Functions
+    /// TRANSFER FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function safeTransferFrom(
@@ -344,7 +344,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
     }
 
     /// -----------------------------------------------------------------------
-    /// Internal Functions
+    /// INTERNAL FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function __mint(
