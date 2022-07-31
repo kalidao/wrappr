@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import {Multicall, Wrappr} from "./Wrappr.sol";
+import {Multicallable, Wrappr} from "./Wrappr.sol";
 
 /// @title Wrappr Factory
 /// @author KaliCo LLC
 /// @notice Factory to deploy ricardian contracts.
-contract WrapprFactory is Multicall {
+contract WrapprFactory is Multicallable {
     event WrapprDeployed(
         address indexed wrappr, 
         string name, 
