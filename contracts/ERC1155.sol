@@ -10,7 +10,7 @@ abstract contract ERC1155TokenReceiver {
         uint256,
         uint256,
         bytes calldata
-    ) external virtual returns (bytes4) {
+    ) public payable virtual returns (bytes4) {
         return ERC1155TokenReceiver.onERC1155Received.selector;
     }
 
@@ -20,7 +20,7 @@ abstract contract ERC1155TokenReceiver {
         uint256[] calldata,
         uint256[] calldata,
         bytes calldata
-    ) external virtual returns (bytes4) {
+    ) public payable virtual returns (bytes4) {
         return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
     }
 }
@@ -102,7 +102,7 @@ abstract contract ERC1155 {
         }
     }
 
-    function setApprovalForAll(address operator, bool approved) public virtual {
+    function setApprovalForAll(address operator, bool approved) public payable virtual {
         isApprovedForAll[msg.sender][operator] = approved;
 
         emit ApprovalForAll(msg.sender, operator, approved);
@@ -114,7 +114,7 @@ abstract contract ERC1155 {
         uint256 id,
         uint256 amount,
         bytes calldata data
-    ) public virtual {
+    ) public payable virtual {
         require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
 
         balanceOf[from][id] -= amount;
@@ -142,7 +142,7 @@ abstract contract ERC1155 {
         uint256[] calldata ids,
         uint256[] calldata amounts,
         bytes calldata data
-    ) public virtual {
+    ) public payable virtual {
         require(ids.length == amounts.length, "LENGTH_MISMATCH");
 
         require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
@@ -158,14 +158,12 @@ abstract contract ERC1155 {
             balanceOf[from][id] -= amount;
             
             // Cannot overflow because the sum of all user
-            // balances can't exceed the max uint256 value.
-            unchecked {
-                balanceOf[to][id] += amount;
-            }
-
-            // An array can't have a total length
+            // balances can't exceed the max uint256 value,
+            // and an array can't have a total length
             // larger than the max uint256 value.
             unchecked {
+                balanceOf[to][id] += amount;
+                
                 ++i;
             }
         }
