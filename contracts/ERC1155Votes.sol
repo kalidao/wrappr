@@ -165,7 +165,7 @@ abstract contract ERC1155Votes is ERC1155 {
         uint256 newVotes
     ) internal virtual {
         unchecked {
-            uint40 timestamp = safeCastTo40(block.timestamp);
+            uint40 timestamp = _safeCastTo40(block.timestamp);
 
             // Won't underflow because decrement only occurs if positive `nCheckpoints`.
             if (
@@ -173,13 +173,13 @@ abstract contract ERC1155Votes is ERC1155 {
                 checkpoints[delegatee][id][nCheckpoints - 1].fromTimestamp ==
                 timestamp
             ) {
-                checkpoints[delegatee][id][nCheckpoints - 1].votes = safeCastTo216(
+                checkpoints[delegatee][id][nCheckpoints - 1].votes = _safeCastTo216(
                     newVotes
                 );
             } else {
                 checkpoints[delegatee][id][nCheckpoints] = Checkpoint(
                     timestamp,
-                    safeCastTo216(newVotes)
+                    _safeCastTo216(newVotes)
                 );
 
                 // Won't realistically overflow.
@@ -190,13 +190,13 @@ abstract contract ERC1155Votes is ERC1155 {
         emit DelegateVotesChanged(delegatee, id, oldVotes, newVotes);
     }
 
-    function safeCastTo40(uint256 x) internal pure virtual returns (uint40 y) {
+    function _safeCastTo40(uint256 x) internal pure virtual returns (uint40 y) {
         require(x < 1 << 40);
 
         y = uint40(x);
     }
 
-    function safeCastTo216(uint256 x) internal pure virtual returns (uint216 y) {
+    function _safeCastTo216(uint256 x) internal pure virtual returns (uint216 y) {
         require(x < 1 << 216);
 
         y = uint216(x);
