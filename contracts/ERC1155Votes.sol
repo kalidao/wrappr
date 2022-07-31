@@ -35,8 +35,8 @@ abstract contract ERC1155Votes is ERC1155 {
     mapping(address => mapping(uint256 => mapping(uint256 => Checkpoint))) public checkpoints;
     
     struct Checkpoint {
-        uint64 fromTimestamp;
-        uint192 votes;
+        uint40 fromTimestamp;
+        uint216 votes;
     }
 
     /// -----------------------------------------------------------------------
@@ -108,7 +108,7 @@ abstract contract ERC1155Votes is ERC1155 {
         }
     }
 
-    function delegate(address delegatee, uint256 id) public virtual {
+    function delegate(address delegatee, uint256 id) public payable virtual {
         address currentDelegate = delegates(msg.sender, id);
 
         _delegates[msg.sender][id] = delegatee;
@@ -165,7 +165,7 @@ abstract contract ERC1155Votes is ERC1155 {
         uint256 newVotes
     ) internal virtual {
         unchecked {
-            uint64 timestamp = safeCastTo64(block.timestamp);
+            uint40 timestamp = safeCastTo40(block.timestamp);
 
             // Won't underflow because decrement only occurs if positive `nCheckpoints`.
             if (
@@ -173,13 +173,13 @@ abstract contract ERC1155Votes is ERC1155 {
                 checkpoints[delegatee][id][nCheckpoints - 1].fromTimestamp ==
                 timestamp
             ) {
-                checkpoints[delegatee][id][nCheckpoints - 1].votes = safeCastTo192(
+                checkpoints[delegatee][id][nCheckpoints - 1].votes = safeCastTo216(
                     newVotes
                 );
             } else {
                 checkpoints[delegatee][id][nCheckpoints] = Checkpoint(
                     timestamp,
-                    safeCastTo192(newVotes)
+                    safeCastTo216(newVotes)
                 );
 
                 // Won't realistically overflow.
@@ -190,15 +190,15 @@ abstract contract ERC1155Votes is ERC1155 {
         emit DelegateVotesChanged(delegatee, id, oldVotes, newVotes);
     }
 
-    function safeCastTo64(uint256 x) internal pure virtual returns (uint64 y) {
-        require(x < 1 << 64);
+    function safeCastTo40(uint256 x) internal pure virtual returns (uint40 y) {
+        require(x < 1 << 40);
 
-        y = uint64(x);
+        y = uint40(x);
     }
 
-    function safeCastTo192(uint256 x) internal pure virtual returns (uint192 y) {
-        require(x < 1 << 192);
+    function safeCastTo216(uint256 x) internal pure virtual returns (uint216 y) {
+        require(x < 1 << 216);
 
-        y = uint192(x);
+        y = uint216(x);
     }
 }
