@@ -14,15 +14,15 @@ contract Wrappr is ERC1155Votes, Multicallable {
 
     event OwnerOfSet(address indexed operator, address indexed to, uint256 id);
 
-    event ManagerSet(address indexed operator, address indexed to, bool approval);
+    event ManagerSet(address indexed operator, address indexed to, bool set);
 
     event AdminSet(address indexed operator, address indexed admin);
 
-    event TransferabilitySet(address indexed operator, uint256 id, bool transferability);
+    event TransferabilitySet(address indexed operator, uint256 id, bool set);
 
-    event PermissionSet(address indexed operator, uint256 id, bool permission);
+    event PermissionSet(address indexed operator, uint256 id, bool set);
 
-    event UserPermissionSet(address indexed operator, address indexed to, uint256 id, bool permission);
+    event UserPermissionSet(address indexed operator, address indexed to, uint256 id, bool set);
 
     event BaseURIset(address indexed operator, string baseURI);
 
@@ -199,26 +199,26 @@ contract Wrappr is ERC1155Votes, Multicallable {
         emit OwnerOfSet(msg.sender, to, id);
     }
 
-    function setTransferability(uint256 id, bool transferability) public payable onlyOwnerOfOrAdmin(id) virtual {
-        transferable[id] = transferability;
+    function setTransferability(uint256 id, bool set) public payable onlyOwnerOfOrAdmin(id) virtual {
+        transferable[id] = set;
 
-        emit TransferabilitySet(msg.sender, id, transferability);
+        emit TransferabilitySet(msg.sender, id, set);
     }
 
-    function setPermission(uint256 id, bool permission) public payable onlyOwnerOfOrAdmin(id) virtual {
-        permissioned[id] = permission;
+    function setPermission(uint256 id, bool set) public payable onlyOwnerOfOrAdmin(id) virtual {
+        permissioned[id] = set;
 
-        emit PermissionSet(msg.sender, id, permission);
+        emit PermissionSet(msg.sender, id, set);
     }
 
     function setUserPermission(
         address to, 
         uint256 id, 
-        bool permission
+        bool set
     ) public payable onlyOwnerOfOrAdmin(id) virtual {
-        userPermissioned[to][id] = permission;
+        userPermissioned[to][id] = set;
 
-        emit UserPermissionSet(msg.sender, to, id, permission);
+        emit UserPermissionSet(msg.sender, to, id, set);
     }
 
     function setURI(uint256 id, string calldata tokenURI) public payable onlyOwnerOfOrAdmin(id) virtual {
@@ -241,15 +241,15 @@ contract Wrappr is ERC1155Votes, Multicallable {
     /// ADMIN FUNCTIONS
     /// -----------------------------------------------------------------------
 
-    function setManager(address to, bool approval)
+    function setManager(address to, bool set)
         public
         payable
         onlyAdmin
         virtual
     {
-        manager[to] = approval;
+        manager[to] = set;
 
-        emit ManagerSet(msg.sender, to, approval);
+        emit ManagerSet(msg.sender, to, set);
     }
     
     function setAdmin(address _admin) public payable onlyAdmin virtual {
