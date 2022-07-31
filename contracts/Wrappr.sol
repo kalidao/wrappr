@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.4;
 
 import {ERC1155Votes} from "./ERC1155Votes.sol";
 import {Multicallable} from "./Multicallable.sol";
