@@ -2,10 +2,10 @@
 pragma solidity >=0.8.4;
 
 /// @notice Contract that enables a single call to call multiple methods on itself.
-/// @author Solady (https://github.com/vectorized/solady/blob/main/src/utils/Multicallable.sol)
+/// @author Modified from Solady (https://github.com/vectorized/solady/blob/main/src/utils/Multicallable.sol)
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/Multicallable.sol)
 abstract contract Multicallable {
-    function multicall(bytes[] calldata data) public payable returns (bytes[] memory results) {
+    function multicall(bytes[] calldata data) public returns (bytes[] memory results) {
         assembly {
             if data.length {
                 results := mload(0x40) // Point `results` to start of free memory.
