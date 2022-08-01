@@ -165,7 +165,7 @@ contract Wrappr is ERC1155Votes, Multicallable {
 
         if (!registered[id]) registered[id] = true;
 
-        if (ownerOf[id] == address(0) && owner != address(0)) {
+        if (ownerOf[id] == address(0) && (ownerOf[id] = owner) != address(0)) {
             ownerOf[id] = owner;
 
             emit OwnerOfSet(address(0), owner, id);
