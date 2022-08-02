@@ -161,11 +161,13 @@ contract Wrappr is ERC1155Votes, Multicallable {
         string calldata tokenURI,
         address owner
     ) public payable virtual {
-        require(msg.sender == ownerOf[id] || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
+        address _owner = ownerOf[id];
+
+        require(msg.sender == _owner || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
 
         if (!registered[id]) registered[id] = true;
-
-        if (ownerOf[id] == address(0) && (ownerOf[id] = owner) != address(0)) {
+        
+        if (_owner == address(0) && (_owner = owner) != address(0)) {
             ownerOf[id] = owner;
 
             emit OwnerOfSet(address(0), owner, id);
