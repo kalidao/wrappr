@@ -22,7 +22,7 @@ contract WrapprFactory is Multicallable {
         string calldata _baseURI,
         uint256 _mintFee,
         address _admin
-    ) external payable {
+    ) public payable virtual {
         address wrappr = address(
             new Wrappr{salt: keccak256(bytes(_name))}(
                 _name,
