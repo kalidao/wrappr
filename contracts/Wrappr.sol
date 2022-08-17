@@ -6,6 +6,7 @@ import {Multicallable} from "./Multicallable.sol";
 
 /// @title Wrappr
 /// @author KaliCo LLC
+/// @custom:coauthor Seed Club Ventures (@seedclubvc)
 /// @notice Ricardian contract for on-chain structures.
 contract Wrappr is ERC1155Votes, Multicallable {
     /// -----------------------------------------------------------------------
