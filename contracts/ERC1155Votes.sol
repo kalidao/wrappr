@@ -5,6 +5,7 @@ import {ERC1155} from "./ERC1155.sol";
 
 /// @notice Compound-like voting extension for ERC-1155.
 /// @author KaliCo LLC
+/// @custom:coauthor Seed Club Ventures (@seedclubvc)
 abstract contract ERC1155Votes is ERC1155 {
     /// -----------------------------------------------------------------------
     /// EVENTS
@@ -164,21 +165,19 @@ abstract contract ERC1155Votes is ERC1155 {
         uint256 oldVotes,
         uint256 newVotes
     ) internal virtual {
+        // Won't underflow because decrement only occurs if positive `nCheckpoints`.
         unchecked {
-            uint40 timestamp = _safeCastTo40(block.timestamp);
-
-            // Won't underflow because decrement only occurs if positive `nCheckpoints`.
             if (
                 nCheckpoints != 0 &&
                 checkpoints[delegatee][id][nCheckpoints - 1].fromTimestamp ==
-                timestamp
+                block.timestamp
             ) {
                 checkpoints[delegatee][id][nCheckpoints - 1].votes = _safeCastTo216(
                     newVotes
                 );
             } else {
                 checkpoints[delegatee][id][nCheckpoints] = Checkpoint(
-                    timestamp,
+                    _safeCastTo40(block.timestamp),
                     _safeCastTo216(newVotes)
                 );
 
