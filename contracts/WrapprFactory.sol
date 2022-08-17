@@ -5,6 +5,7 @@ import {Multicallable, Wrappr} from "./Wrappr.sol";
 
 /// @title Wrappr Factory
 /// @author KaliCo LLC
+/// @custom:coauthor Seed Club Ventures (@seedclubvc)
 /// @notice Factory to deploy ricardian contracts.
 contract WrapprFactory is Multicallable {
     event WrapprDeployed(
