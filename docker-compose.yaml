@@ -3,10 +3,11 @@ version: "3.9"
 networks:
   kali-wrappr:
     name: kali-wrappr
+    driver: bridge
 
 services:
   contracts:
-    command: yarn start
+    command: bash -c "yarn install && yarn start"
     working_dir: /app/contracts
     # restart: unless-stopped
     build:
@@ -18,7 +19,7 @@ services:
     volumes:
       - ./contracts:/app/contracts
   backend:
-    command: yarn start
+    command: bash -c "yarn install && yarn start"
     container_name: backend
     working_dir: /app/backend
     ports:
@@ -38,7 +39,7 @@ services:
     volumes:
       - ./backend:/app/backend
   frontend:
-    command: yarn start
+    command: bash -c "yarn install && yarn start"
     container_name: frontend
     working_dir: /app/frontend
     depends_on:
