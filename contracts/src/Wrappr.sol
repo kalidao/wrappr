@@ -1,28 +1,29 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.4;
 
 import {ERC1155Votes} from "./ERC1155Votes.sol";
-import {Multicall} from "./Multicall.sol";
+import {Multicallable} from "./Multicallable.sol";
 
 /// @title Wrappr
 /// @author KaliCo LLC
+/// @custom:coauthor Seed Club Ventures (@seedclubvc)
 /// @notice Ricardian contract for on-chain structures.
-contract Wrappr is ERC1155Votes, Multicall {
+contract Wrappr is ERC1155Votes, Multicallable {
     /// -----------------------------------------------------------------------
     /// EVENTS
     /// -----------------------------------------------------------------------
 
     event OwnerOfSet(address indexed operator, address indexed to, uint256 id);
 
-    event ManagerSet(address indexed operator, address indexed to, bool approval);
+    event ManagerSet(address indexed operator, address indexed to, bool set);
 
     event AdminSet(address indexed operator, address indexed admin);
 
-    event TransferabilitySet(address indexed operator, uint256 id, bool transferability);
+    event TransferabilitySet(address indexed operator, uint256 id, bool set);
 
-    event PermissionSet(address indexed operator, uint256 id, bool permission);
+    event PermissionSet(address indexed operator, uint256 id, bool set);
 
-    event UserPermissionSet(address indexed operator, address indexed to, uint256 id, bool permission);
+    event UserPermissionSet(address indexed operator, address indexed to, uint256 id, bool set);
 
     event BaseURIset(address indexed operator, string baseURI);
 
@@ -161,13 +162,13 @@ contract Wrappr is ERC1155Votes, Multicall {
         string calldata tokenURI,
         address owner
     ) public payable virtual {
-        require(msg.sender == ownerOf[id] || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
+        address _owner = ownerOf[id];
+
+        require(msg.sender == _owner || manager[msg.sender] || msg.sender == admin, "NOT_AUTHORIZED");
 
         if (!registered[id]) registered[id] = true;
-
-        if (ownerOf[id] == address(0) && owner != address(0)) {
-            ownerOf[id] = owner;
-
+        
+        if (_owner == address(0) && (ownerOf[id] = owner) != address(0)) {
             emit OwnerOfSet(address(0), owner, id);
         }
 
@@ -199,26 +200,26 @@ contract Wrappr is ERC1155Votes, Multicall {
         emit OwnerOfSet(msg.sender, to, id);
     }
 
-    function setTransferability(uint256 id, bool transferability) public payable onlyOwnerOfOrAdmin(id) virtual {
-        transferable[id] = transferability;
+    function setTransferability(uint256 id, bool set) public payable onlyOwnerOfOrAdmin(id) virtual {
+        transferable[id] = set;
 
-        emit TransferabilitySet(msg.sender, id, transferability);
+        emit TransferabilitySet(msg.sender, id, set);
     }
 
-    function setPermission(uint256 id, bool permission) public payable onlyOwnerOfOrAdmin(id) virtual {
-        permissioned[id] = permission;
+    function setPermission(uint256 id, bool set) public payable onlyOwnerOfOrAdmin(id) virtual {
+        permissioned[id] = set;
 
-        emit PermissionSet(msg.sender, id, permission);
+        emit PermissionSet(msg.sender, id, set);
     }
 
     function setUserPermission(
         address to, 
         uint256 id, 
-        bool permission
+        bool set
     ) public payable onlyOwnerOfOrAdmin(id) virtual {
-        userPermissioned[to][id] = permission;
+        userPermissioned[to][id] = set;
 
-        emit UserPermissionSet(msg.sender, to, id, permission);
+        emit UserPermissionSet(msg.sender, to, id, set);
     }
 
     function setURI(uint256 id, string calldata tokenURI) public payable onlyOwnerOfOrAdmin(id) virtual {
@@ -241,15 +242,15 @@ contract Wrappr is ERC1155Votes, Multicall {
     /// ADMIN FUNCTIONS
     /// -----------------------------------------------------------------------
 
-    function setManager(address to, bool approval)
+    function setManager(address to, bool set)
         public
         payable
         onlyAdmin
         virtual
     {
-        manager[to] = approval;
+        manager[to] = set;
 
-        emit ManagerSet(msg.sender, to, approval);
+        emit ManagerSet(msg.sender, to, set);
     }
     
     function setAdmin(address _admin) public payable onlyAdmin virtual {
@@ -293,7 +294,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Transfer Functions
+    /// TRANSFER FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function safeTransferFrom(
@@ -302,7 +303,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256 id,
         uint256 amount,
         bytes calldata data
-    ) public override virtual {
+    ) public payable override virtual {
         super.safeTransferFrom(from, to, id, amount, data);
 
         require(transferable[id], "NONTRANSFERABLE");
@@ -318,7 +319,7 @@ contract Wrappr is ERC1155Votes, Multicall {
         uint256[] calldata ids,
         uint256[] calldata amounts,
         bytes calldata data
-    ) public override virtual {
+    ) public payable override virtual {
         super.safeBatchTransferFrom(from, to, ids, amounts, data);
 
         // Storing these outside the loop saves ~15 gas per iteration.
@@ -344,7 +345,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     }
 
     /// -----------------------------------------------------------------------
-    /// Internal Functions
+    /// INTERNAL FUNCTIONS
     /// -----------------------------------------------------------------------
 
     function __mint(
@@ -356,7 +357,7 @@ contract Wrappr is ERC1155Votes, Multicall {
     ) internal virtual {
         _mint(to, id, amount, data);
 
-        safeCastTo192(totalSupply[id]);
+        _safeCastTo216(totalSupply[id]);
 
         _moveDelegates(address(0), delegates(to, id), id, amount);
 
