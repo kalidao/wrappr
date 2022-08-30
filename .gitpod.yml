@@ -1,0 +1,60 @@
+tasks:
+  - name: KaliDAO Wrappr App
+    init: |
+      # prebuild steps the run in the background for each commit
+      # bring in secret access tokens from gitpod user dashboard
+      eval $(gp env -e)
+      # build images from Dockerfile
+      docker-compose build
+      cd backend && yarn install && cd -
+      cd frontend && yarn install && cd -
+      cd e2e-tests && yarn install && cd -
+      cd contracts && yarn install && cd -
+      gp sync-done build
+    command: |
+      # set -evx
+      # shutdown any leftover containers from a previous session
+      docker-compose down
+      # start app modules
+      docker-compose up -d backend
+      # set API path
+      gp ports await 3001 && \
+      export SUBGRAPH_API_URL=$(gp url 3001)
+      docker-compose up -d frontend
+  - name: Shell
+    command: |
+      # gp sync-await build
+      bash
+    openMode: split-right
+
+vscode:
+  extensions:
+    - ms-vscode.vscode-typescript-tslint-plugin
+    - bungcip.better-toml
+    - esbenp.prettier-vscode
+    - juanblanco.solidity
+
+ports:
+  - port: 3000
+    onOpen: open-browser
+    visibility: public
+
+  - port: 3001-8999
+    onOpen: ignore
+
+github:
+  prebuilds:
+    # enable for the master/default branch (defaults to true)
+    master: true
+    # enable for all branches in this repo (defaults to false)
+    branches: true
+    # enable for pull requests coming from this repo (defaults to true)
+    pullRequests: true
+    # enable for pull requests coming from forks (defaults to false)
+    pullRequestsFromForks: true
+    # add a "Review in Gitpod" button as a comment to pull requests (defaults to true)
+    addComment: true
+    # add a "Review in Gitpod" button to pull requests (defaults to false)
+    addBadge: true
+    # add a label once the prebuild is ready to pull requests (defaults to false)
+    addLabel: prebuilt-in-gitpod
