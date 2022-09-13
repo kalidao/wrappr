@@ -2,7 +2,7 @@ This is a [monorepo](https://semaphoreci.com/blog/what-is-monorepo) for Kali Wra
 
 # Wrappr Structure
 
-![Screenshot 2022-09-14 055201](https://user-images.githubusercontent.com/13903299/190007927-0b9622e3-246c-4bb8-835d-2208c6149180.png)
+![Screenshot 2022-09-14 062444](https://user-images.githubusercontent.com/13903299/190012298-58018aea-4496-4994-89ac-67300834e519.png)
 
 # Repo Structure
 
@@ -47,3 +47,4 @@ To watch log files in daemon mode
 ```bash
 docker-compose logs --follow
 ```
+
