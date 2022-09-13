@@ -1,5 +1,9 @@
 This is a [monorepo](https://semaphoreci.com/blog/what-is-monorepo) for Kali Wrappr.
 
+# Wrappr Structure
+
+![Screenshot 2022-09-14 055201](https://user-images.githubusercontent.com/13903299/190007927-0b9622e3-246c-4bb8-835d-2208c6149180.png)
+
 # Repo Structure
 
 ```ml
