@@ -1,0 +1,365 @@
+The {{name}} Charter
+0x5228eBc680BA2Ac70A8dB9FBF01CEAaC9Dd9b2Ea
+{{ricardianId}}
+1. About {{name}} DAO
+Mission
+{{name}} DAO (“We”, “{{name}}” or the “DAO”) exists to pursue {{mission}} (the “Purpose”). 
+
+We will distribute: wealth, knowledge, access to power, control over resources, and participation in governance in order to achieve the Purpose.
+
+And we will do this responsibly and equitably by becoming a decentralized organization governed by its Members (defined herein).
+Defining Success
+The DAO will measure success in the following ways:
+
+Members are participating.
+Membership is growing.
+The DAO financially supports its own operations.
+Documents and code are created, amended, and published as lessons are learned.
+2. Member Privileges and Obligations
+Like in a co-operative, Members have the privilege to enjoy rewards. In return, they have shared responsibilities toward a common goal. {{name}} DAO requires high member participation to be successful; it is not for spectators, therefore we as Members:
+
+Participate in the discussion, creation, voting and documentation of Proposals (defined herein).
+Make friction, tension and inefficiencies known to all DAO Members, so that changes, improvements and learning can take place.
+Monitor and record progress, for the creation of metrics to measure DAO health.
+Membership Requirements
+By joining the DAO, you agree to abide by this Charter.
+Share the values of the Code of Ethics.
+Act in accordance with the Code of Conduct.
+Participate in official communications channels on a regular basis.
+Members
+{{name}} DAO is managed by teams of elected Members that serve the DAO, but for the avoidance of doubt, such management can be changed by the DAO and the DAO retains the right to manage its own affairs at all times.
+
+{{name}} DAO is open to anyone authorized by the DAO.
+
+Membership rights, including, but not limited to, governance in the DAO shall be represented by DAO Membership Tokens (defined herein) minted and issued by the DAO (such token holders, “Members”).
+Removal of Members
+Members may be removed by Governance Committee vote or the DAO for violating the Code of Conduct or Code of Ethics. Removal of membership is defined as the exclusion of the Member from DAO spaces, processes, and tools. 
+
+If the removed Member has been asked to give up their DAO Membership Tokens but refuses to do so, the DAO may deploy software updates to exclude that Member, including, but not limited to, the burn or removal of such DAO Membership Tokens from the removed Member’s key signature accounts.
+Code of Conduct and Ethics
+See Schedule A, Code of Conduct.
+
+See Schedule B, Code of Ethics.
+Resolving Conflicts
+Conflicts and disagreements are normal and part of any human endeavor. As a brand new organization, {{name}} DAO doesn’t have all the answers yet. Members are expected to apply our values in creating and modifying the instruments for conflict resolution.
+
+See Schedule C, Resolving Conflicts.
+Taxes and Legality
+Taxes and legal compliance are a Member’s own responsibility. Nothing published or claimed by the DAO or its Members constitutes legal or tax advice.
+3. DAO Operations and Governance
+DAOs are decentralized organizations, i.e., unincorporated associations of individuals, entities, associations and/or other persons or groups of persons. 
+
+{{name}} DAO builds on shared interests managed through open and secure software that will help in the DAO’s governance. As we experiment with day-to-day operations, we should always consider:
+
+Is our operation following the vision of {{name}} DAO?
+Is the solution repeatable and should it be coded into software?
+Effective Date
+The Effective Date means the calendar date upon which this Charter has been approved by a majority of participants in the {{name}} DAO Discord channel by emoji vote, at which time the articles of this Charter will be activated. 
+
+If such means of affirmation are not otherwise available, or if {{name}} DAO first seeks an alternative source of truth to establish this Charter, such as governance votes recorded on Ethereum, activation of this Charter shall occur upon a cryptographic vote by DAO Membership Tokens or other secure means of affirmation, such as Snapshot, that demonstrate collective consent based on ownership of DAO Membership Tokens.
+Seasons
+Seasons are a defined time period of DAO operations. Season 0 is from the Effective Date of this Charter until thirty (30) days after the Election of the DAO committees (see below). Season 1 begins on the thirty-first (31st) day after such Election. Seasons must be consecutive without a gap in dates unless otherwise decided by the Governance Committee.
+Committees and Teams
+To aid the operations of the DAO and to safeguard its integrity and assets, the DAO will establish and confirm by a DAO Membership Tokens vote a minimum of three (3) committees (such confirmation, the “Election”). At all times, the DAO retains the power to dissolve a committee or subcommittee upon a proposal (see below, Proposals).
+
+The three initial committees are:
+
+Governance
+Development
+Treasury
+
+Each committee will be staffed with a minimum of three (3) DAO members. To ensure a separation of powers, no member may serve on more than one committee in any term. A committee member may serve under a subcommittee of the same committee, but cannot serve in the subcommittee of another committee. 
+
+A term is the remainder of a Season.
+Governance Committee
+The Governance Committee ensures the integrity of this Charter, proposals process, voting, and discussion. It resolves any conflict of interest, rules on ethical questions, and disagreements. It is also responsible for the structure and maintenance of the DAO’s legal entities, if any are established. It builds trust between its members and between the DAO and other entities. It also keeps this Charter up-to-date when proposals require the amendment of this Charter. All changes to the Charter must be passed through the proposal process.
+Development Committee
+The Development Committee oversees the creation and maintenance of software, tools, and documents as well as partnerships and the growth of its capabilities. It is responsible for maintaining the DAOs membership information and processes and safeguarding information, including consensus mechanisms required to demonstrate a confirmed proposal.
+Treasury Committee
+The Treasury Committee safeguards the DAO’s assets and distributes tokens according to the will of its membership, proposal processes, and manages its finances. The Treasury Committee members are required to be on the DAO multisig wallet, if established, or other shared account with similar cryptographic protections.
+
+Prior to the end of the current season, the Treasury Committee will propose the allocation of a pool of tokens for subsequent seasons. It is the Treasury Committee’s responsibility to propose the minting of new tokens.
+Election of the Committee Members
+Upon the Effective Date of the Charter, the members of each committee will be voted upon and confirmed by proposals.
+
+While there is no current limit to the term of any member on a committee or subcommittee, the DAO may set a term limit to any position in the DAO by proposal.
+
+At all times, the DAO retains the power to remove a member of a committee or subcommittee upon a proposal, unless such member or committee is granted an exemption by the DAO.
+Power to Form Teams and Subcommittees
+Any committee may form subcommittees to distribute its committee work. It may appoint or remove other DAO members to or from these subcommittees as needed.
+
+Teams of members may be allocated a budget of tokens or other assets from the DAO treasury in pursuit of the DAO’s objectives. Teams are impermanent and their funding requires approval from one or more Committees or the passing of a proposal.
+Proposals and Quorum
+Significant decisions regarding the Committee membership, Seasonal budget allocations, member compensation, changes to this Charter are voted on by the DAO members through a tokenized proxy, where such proxy shall be understood as that tokenized proxy that first activated this Charter (“DAO Membership Tokens”). Minor decisions are carried out at the committee or team level. DAO Membership Tokens and related consensus mechanisms may be configured and updated by proposal.
+Proposals
+All DAO proposals will conform to the default time period of seven (7) days to vote, unless otherwise configured by the DAO Membership Tokens (such proposal, a “Proposal”). A Proposal may be re-proposed one time, subject to substantive differences in environment, market, or circumstance.
+
+A Proposal shall pass by a simple majority and when quorum has been reached. Other thresholds or vote counting methods may be created by amending this Charter through a simple majority vote, or as otherwise configured by the DAO Membership Tokens.
+
+A Governance Committee will be formed to help people write complete Proposals and guide the DAO governance process. The initial Proposal forum is Snapshot unless otherwise stated in the activation of this Charter. This forum may be changed by the Governance Committee or as otherwise configured by the DAO Membership Tokens.
+Quorum
+Quorum is based on the number of DAO Membership Tokens in circulation. Circulation is defined as the number of tokens distributed to members or as otherwise configured by the DAO Membership Tokens and/or Proposal.
+
+The default quorum threshold is ten percent (10%) of governance tokens in circulation. E.g., if we have one thousand (1000) total tokens in circulation, then we’ll need one hundred (100) tokens to vote to reach the quorum threshold. The DAO may change the default quorum threshold by Proposal vote or upon initial configuration.
+
+The Quorum threshold is defined by the minimum number of tokens that have voted in the Proposal. 
+
+The DAO may propose different types of Proposals that require a higher or lower threshold. The Governance Committee is responsible for setting the process for Proposals.
+Delegation
+The DAO allows members to explicitly delegate their votes to another member and remove the delegation at any time for any reason.
+Token Distribution
+The DAO may establish multiple types of tokens by Proposal, however, only the DAO Membership Token will be used for voting on Proposals. Other tokens will not count towards quorum or votes.
+The Treasury Committee can distribute DAO Membership Tokens to other committees and teams to incentivize and reward contributions to the DAO.
+Seasonal Budgets and Token Allocations
+All token allocations to committees, teams, projects, and individuals require a Proposal to pass. All allocations are distributed on a Season-by-Season basis unless otherwise noted.
+4. Building the DAO Future
+During our initial phase we are measuring health based on a set of parameters that are flexible to accommodate learning and incentive-based to encourage participation and propel development and growth. Health measurements will surely change as learning accelerates and membership expands. We cannot anticipate all problems, but the hope is that gaps in procedure will be filled through amendments (Proposals).
+DAO Health
+The KPIs (Key Performance Indicators) are measurements we use to evaluate how the DAO is performing over time. The baseline KPIs include financials, member engagement, and proposals. The measurements will answer questions such as, how is the DAO treasury functioning, what percentage of Proposals are contributing to the growth of the DAO, and how many members are actively participating in voting. The indicators will be measured real-time, monthly or seasonally and will be accessible by all DAO members.
+Knowledge Sharing
+To accelerate the world’s transition to equitable and just governance we must document our stories and share them with the world. All of our documentations are CC0 by default. Members are encouraged to share our stories via social media and conferences.
+Attribution
+This Charter, Code of Conduct, Code of Ethics, and Resolving Conflicts documents have been adapted from CrisisDAO and OrangeDAO under CC0 license on 9/09/2022.
+License
+This Charter, Code of Conduct, Code of Ethics, and Resolving Conflicts documents are available under CC0 license.
+Member Signatures and Acceptance of the {{name}} Charter
+By signing this Charter, I agree to become a Member of {{name}} DAO, accept the terms and conditions of this Charter, and pledge to support and advance the vision, mission, and goals of this DAO.
+
+If you have received any DAO Membership Tokens or are otherwise a DAO Member, you consent to and agree to become legally bound by this Charter, where such receipt and acceptance is effective as if signed by writing.
+
+Any signature or execution made through the use of private keys for any matters relating to this Charter, including, but not limited to, a Ricardian Mint (defined below), shall be valid, as if signed in writing.
+
+This Charter shall be evidenced by the RicardianId (defined below) owned by the DAO Membership Tokens.
+
+“RicardianId'” means the `chainId` of the blockchain Ricardian Mint was executed on and the value of the `id` field stored in the mapping type `ownerOf()` in the contract type `Wrappr` currently deployed to the key signature account 0x5228eBc680BA2Ac70A8dB9FBF01CEAaC9Dd9b2Ea on Ethereum and as may be deployed on any other compatible blockchain other than those commonly understood as a testnet. The bytecode stored at such key signature account shall be referred to as the “Ricardian Smart Contract.”
+
+“Ricardian Mint” means a confirmation through the  `mint()` or  `manageMint()` function of the Ricardian Smart Contract that results in the creation of a RicardianId by or for the benefit of a key signature account.
+
+
+
+Schedule A
+Code of Conduct
+Members of the {{name}} DAO are a global community. Our diversity of location, gender, age, and life experience is valuable within the DAO, and because of this, it takes honesty, respect, and kindness to work together. The code of conduct is not a set of rules to be gamed or boxes to be checked. As an inclusive and open culture, processes are in place to address issues as they arise.
+ 
+In keeping with our open source ethos we have remixed aspects of the Mozilla Community Participation Guidelines and the Open Humans Code of Conduct.
+ 
+This Code of Conduct applies whenever you participate in {{name}} DAO online and offline spaces including when you:
+ 
+Participate in our online communication spaces, including Discord and other forums
+Participate in DAO events and in-person spaces
+Working with other DAO community members
+Representing the DAO at public events
+Speak on behalf of the DAO on social media
+
+In {{name}} DAO spaces all people are safe to participate, introduce new ideas and inspire others, regardless of: background, family status, gender, gender identity or expression, marital status, sex, sexual orientation, native language, age, ability, race and/or ethnicity, national origin, socioeconomic status, religion, geographic location and any other dimension of diversity.
+
+Openness, collaboration and participation are core aspects of our work. Our community is a place for critical discussion and learning - where all subjects can be addressed, all critiques can be heard. 
+ 
+Learning will only take place if the environment is genuine, thoughtful, honest and kind. That is why we insist that you:
+ 
+Be Courteous
+
+The respect you receive is equal to what you give out, what you give yourself and the world around you. Value each other’s ideas, styles and viewpoints. We may not always agree, but disagreement is no excuse for poor behaviour. Be open to different possibilities and to being wrong. Be courteous in all interactions and communications, especially when debating the merits of different options. Be aware of your impact on others and how intense interactions may be affecting people.
+ 
+Be constructive
+
+Take responsibility for how you come across and your mistakes – if someone says they have been harmed through your words or actions, listen carefully, apologise sincerely, and change your behaviour in future.
+Be Clear but Professional
+
+We are likely to have some discussions about when criticism is respectful and when it’s not. We must be able to speak clearly when we disagree and when we think we need to improve. We cannot withhold hard truths. Doing so respectfully is hard, doing so when others don’t seem to be listening is harder, and hearing such comments when one is the recipient can be even harder still. We need to be honest and direct, as well as respectful.
+ 
+Be grateful for the opportunity to hear different perspectives from others. Even when you don't accept them, hear them out. We respect people even when we don’t respect beliefs.
+ 
+Be Inclusive
+
+Seek diverse perspectives. Diversity of views powers innovation, even if it is not always comfortable. Encourage all voices. Help new perspectives be heard and listen actively. If you find yourself dominating a discussion, it is especially important to step back and encourage other voices to join in. Be aware of how much time is taken up by dominant members of the group. Provide alternative ways to contribute or participate when possible.
+ 
+Be inclusive of everyone in an interaction, respecting and facilitating people’s participation whether they are remote (on video or phone); not native language speakers; from a different culture; in a different time zone or facing other challenges to participation. Think about how you might facilitate alternative ways to contribute or participate.
+ 
+Choose to be silent
+
+Sometimes when we participate in conversations we feel the need to be silent, whether it is because we are becoming frustrated and don’t want to say something we shouldn’t or because the topic is sensitive for us. Tell others that you don’t want to talk about that issue right now, or that the topic is personal and you aren’t willing to discuss it. That is true for others too, so if someone communicates that they don’t want to talk about something then respect their silence.
+ 
+Be Aware
+
+Ask yourself, how may my actions and words make other people feel for example, how will inappropriate nudity, out of control drunkeness, inappropriate physical contact and sexual imagery, religious, racial, homophobic or cultural insults affect others? Be aware that others may have different attitudes on these issues and may not intend to cause offence. It may be necessary to make them aware how their behaviour affects you.
+ 
+Don’t assume that everyone is like you
+
+Whether your behaviour has caused someone else discomfort or their behaviour has caused you discomfort this is an opportunity for growth. Communicate clearly and respectfully, listen patiently, learn and grow as a person.
+Understand Different Perspectives
+
+Our goal should not be to “win” every disagreement or argument. A more productive goal is to be open to ideas that make our own ideas better. Strive to be an example for inclusive thinking. “Winning” is when different perspectives make our work richer and stronger.
+ 
+You may not know the full story. Listen.
+Appreciate and Accommodate Our Similarities and Differences
+ 
+We come from many cultures and backgrounds. Cultural differences can encompass everything from official religious observances to personal habits to clothing. Be respectful of people with different cultural practices, attitudes and beliefs. Work to eliminate your own biases, prejudices and discriminatory practices. Think of others’ needs from their point of view. Use preferred names and pronouns and the appropriate tone of voice. Respect people’s right to privacy and confidentiality. Be open to learning from and educating others as well as educating yourself.
+ 
+Lead by Example
+
+By matching your actions with your words, you become a person others want to follow. Your actions influence others to behave and respond in ways that are valuable and appropriate for our organizational outcomes. Hold yourself and others accountable for inclusive behaviors.
+ 
+Behavior That Will Not Be Tolerated
+
+The following behaviors are considered to be unacceptable under these guidelines.
+ 
+The Code has set out the behaviour we expect. Obviously the converse is true. If it is not obvious to you that the behaviour we expect does not include threatening violence, doxxing or insulting people then you can’t be part of our community. If your hurtful actions or words are a crime we may report them to the authorities.
+ 
+Violence and Threats of Violence
+
+Violence and threats of violence are not acceptable - online or offline. This includes incitement of violence toward any individual, including encouraging a person to commit self-harm. This also includes posting or threatening to post other people’s personally identifying information (“doxxing”) online.
+ 
+Personal Attacks
+
+Conflicts will inevitably arise, but frustration should never turn into a personal attack. It is not okay to insult, demean or belittle others. Attacking someone for their opinions, beliefs and ideas is not acceptable. It is important to speak directly when we disagree and when we think we need to improve, but such discussions must be conducted respectfully and professionally, remaining focused on the issue at hand.
+ 
+Derogatory Language
+
+Hurtful or harmful language related to:
+ 
+Background
+Family status
+Gender
+Gender identity or expression
+Marital status
+Sex
+Sexual orientation
+Native language
+Age
+Ability
+Race and/or ethnicity
+Caste
+National origin
+Socioeconomic status
+Religion
+Geographic location
+Other attributes
+Diet/Vegan
+
+is not acceptable.
+
+If you’re unsure if a word is derogatory, don’t use it. When asked to stop, stop the behaviour in question.
+ 
+Unwelcome Sexual Attention or Physical Contact
+
+Unwelcome sexual attention and unwelcome physical contact are not acceptable. This includes sexualized comments, jokes or imagery in interactions, communications or presentation materials, as well as inappropriate touching, groping, or sexual advances. This includes touching a person without permission, including sensitive areas such as their hair, pregnant stomach, mobility device (wheelchair, scooter, etc) or tattoos. This also includes physically blocking or intimidating another person. Physical contact or simulated physical contact without affirmative consent is not acceptable. This includes sharing or distribution of sexualized images or text.
+ 
+You are entitled to tell other people when their attention or behaviour makes you uncomfortable.
+ 
+Disruptive Behaviour
+
+Sustained disruption of events, forums, or meetings, including talks and presentations, will not be tolerated. This includes:
+ 
+‘Talking over’ or ‘heckling’ speakers
+Drinking alcohol to excess or using recreational drugs to excess, or pushing others to do so
+Making derogatory comments about those who abstain from alcohol or other substances, pushing people to drink, talking about their abstinence or preferences to others, or pressuring them to drink - physically or through jeering
+Commenting negatively about other people’s choices
+Inappropriate nudity
+Disparaging people’s dietary preferences
+Discriminating against vegans and other philosophical, religious beliefs
+Influencing Unacceptable Behaviour
+ 
+We will treat influencing or leading such activities the same way we treat the activities themselves, and thus the same consequences apply.
+ 
+Modification
+
+As with all things open source this is a work in progress. We will revisit it from time to time. When we do, the new code will apply to all DAO spaces.
+ 
+Schedule B
+Code of Ethics
+We have designed this Code of Ethics as a guide of principles, to help us conduct our business honestly, with integrity and with shared understanding. 
+Core values
+ 
+Our values are the fundamental beliefs that guide our actions and attitudes.  They help us to determine what is important to us collectively and the way we work.  Each proposal made will be taken on its own merit, and our core values will continue to be informed by the culture we establish.
+Open
+ 
+Philosophically and practically, we default to open instead of lock down. We subscribe to the Open Definition where data, code or content is regarded as open if anyone is free to use, reuse and redistribute it, thereby ensuring interoperability between different pools of material. 
+Iterative
+ 
+We strive to behave in an iterative manner.  This involves working in a cyclical fashion, refining the latest version or iteration of a process, proposal or product.  Iteration ensures we have community input and continuous improvement to ideas and outcomes.
+Inclusive
+ 
+We view our differences as strengths.  We protect our diversity of location, gender, culture, race, age and life experience and promote our inclusivity through our Code of Conduct and Operations policies.
+Innovative
+ 
+Innovation is the creation of something new, be it a product, a service or process.  We express innovation as something new that aims to improve efficiency and effectiveness.  Something new that adds value.
+Sagacious
+ 
+We aim to demonstrate mental discernment, understanding and the ability to make good judgment through our actions.  Striving for sagacity ensures we are both conscious of what we have done, and what we are doing to continually inform better decision making.
+Non Maleficent
+ 
+It is our intention to do no harm.  We wish to avoid actions that will create risk, legal or otherwise, to persons, animals, or the environment and we will step back from any action to look at the broader context and mitigate any potential negative effects.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schedule C
+{{name}} DAO Resolving Conflicts
+Conflict of interest:
+A conflict of interest arises when an individual member may personally benefit from any proposal.
+
+Conflicts of interest are not illegal and are in fact normal.  {{name}} DAO Members are people with families and friends, and may have businesses, professions, investments, property interests, and other connections to different communities.
+
+When any Member finds themselves in a situation wherein they may have a financial interest, personal activity or relationship that could impair their ability to act impartially and in the best interest of the DAO, they shall report their conflict to the Membership Team and recuse themselves from voting on the issue, either directly or by delegated votes.
+
+If any Member believes another Member has a conflict of interest, they should discuss it together.  If both members are not able to decide if a conflict may occur, they shall discuss the situation with the Membership Team.
+
+Conflicts of interest should be documented publicly on the Discord by the Membership Team.
+Conflict of personality:
+When someone contravenes the Code of Conduct, offends or makes another Member uncomfortable, this is the process that we follow.
+
+If you are offended or uncomfortable, then please start by talking to the person who has offended you, if you feel able to do so and preferably in a non-threatening environment where you feel most comfortable, whether public or private. Explain to them that what they said or did offended you and that it is inappropriate in our community.
+
+If you don’t feel able to speak to someone alone then ask someone else from the community to be present in the conversation. Don’t know who to ask? Then ask one of the Membership team, if the problem is with one of the Membership team then ask the Operations team.
+
+If someone approaches you and tells you that something you have done or said is offensive, then listen to them. Try to understand their point of view. It is easy to feel offended or defensive at this point but most people really appreciate an honest attempt to listen and understand. We believe that you will come to an understanding.
+ 
+You may not feel able to speak directly to the person who has offended you even with someone else present. Perhaps you feel there is a power imbalance or something else inhibiting dialogue. If so then speak to the Membership team about the problem. The Membership team will probably ask to meet with both you and the other person to discuss the issue. If you agree to meet with the other person then you can also have someone from the community to support you in the meeting. The Membership team may also bring in others as they feel is appropriate.
+
+If you don’t want to meet with the person the Membership team may meet with them and then again with you to see what resolution may be reached.
+
+If someone refuses to behave in an appropriate way then that person may be excluded from DAO convened spaces. The Membership Team will define the steps that will be taken.  The steps will always involve communication, learning and a calm phased, appropriate approach. If that happens then the DAO may choose to speak publicly about it if that seems appropriate but it certainly doesn’t have to do so.
+
+This is a process. It takes time. Be patient.
+
+It is not appropriate to first air your grievances on social media. In the same way it is not appropriate to complain publicly about people without first following the process. If you do so then you may make it difficult or impossible for our process to operate through eroding trust.
+A note on conflict:
+Conflict gives us an opportunity to learn and grow.  We should all aim to examine our own actions and reactions in the spirit of generosity, good will and evolution. 
+Modification 
+As with all things open source this is a work in progress. We will revisit it from time to time. When we do, the new code will apply to all DAO spaces.
+
