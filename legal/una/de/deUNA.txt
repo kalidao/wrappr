@@ -1,0 +1,115 @@
+Trustless Unincorporated Nonprofit Association Agreement (“TUNAA”)
+0xE22ebfbD3e6609A9550a86545E37af7DE1EE688b
+
+{{name}}
+{{ricardianId}}
+
+Article I - Organization
+
+Section 1.1 - Status. The organization identified by private key holders affirmed hereby by method of Ricardian Mint (the “Members” or the “DAO”) is a “nonprofit association” under the Delaware Uniform Unincorporated Nonprofit Association Act, Del. Code Ann. Tit. 6, §§ 1901-1916.
+
+The DAO is not intended to be, and shall not be deemed to be, a partnership, but shall be an unincorporated organization consisting of two or more members joined by mutual consent for a common, nonprofit purpose.
+
+The DAO shall be identified by and its legal name shall be {{name}}, or if not otherwise indicated hereby, the RicardianId held by its membership unless otherwise stated through a Confirmed Transaction with the `setURI()` function of the Ricardian Smart Contract or through a Ricardian Mint.
+
+Section 1.2 - Purposes. The DAO is organized to carry out the missions stated by the Members in transactions involved in the Ricardian Mint, related websites or otherwise memorialized in a writing by the DAO, which shall primarily be {{mission}}. 
+
+Such purposes shall be exclusively for charitable, educational, religious or scientific purposes within the meaning of Section 501(c)(3) of the Internal Revenue Code.
+
+For the avoidance of doubt, any signature or execution made through the use of private keys on Ethereum for any matters relating to the DAO shall be valid, as if signed in writing.
+
+Section 1.3 - Nondiscrimination. The DAO shall not arbitrarily discriminate on the basis of race, nationality, religion, age, gender, sexual orientation, disability, political affiliation, or otherwise.
+
+Section 1.4 - Decentralized Autonomous Organization (DAO). The DAO is a “decentralized autonomous organization,” i.e., an unincorporated association of individuals, entities, associations and/or other persons or groups of persons.
+Article II - Membership
+
+Section 2.1 - Eligibility. Membership in the DAO, as defined in Del. Code Ann. Tit. 6, § 1901, shall be voluntary and open to any individual whose purpose or presumed intent is to contribute to the DAO and is willing to accept the responsibilities and terms of membership.
+
+Section 2.2 - Admission. The DAO is a decentralized network of members and may admit or deny individuals for any arbitrary purpose or lack of purpose.
+
+All of the DAO governing Members shall have their membership and related rights determined upon receipt of voting tokens or similar units secured on Ethereum or as otherwise adopted by the Members (“DAO Membership Tokens”). 
+
+DAO Membership Tokens are used for participating in and improving the governance of the DAO through affirmative votes effectuated via the Designated Smart Contract (such process, “Cryptographic Consensus”). 
+
+Once the DAO admission requirements are met a prospective Member may be put up to a vote of the full membership or similar process enabled by the Designated Smart Contract. The DAO will consistently review, and if necessary, Members may make adjustments to the DAO admission requirements based on their evolving needs and as registered by Cryptographic Consensus.
+
+If you have received any DAO Membership Tokens or are otherwise a Member, you consent to and agree to become legally bound by this TUNAA as both a DAO participant, and more specifically, a Member.
+
+Section 2.3 - Rights. The Members shall utilize the Designated Smart Contract as the exclusive method of holding and allocating rights and obligations among the Members, and spending, or otherwise distributing any tokens that are DAO Property, of minting and issuing DAO Membership Tokens and holding and recording votes among the Members. 
+
+The DAO may also utilize the Designated Smart Contract to administer and facilitate certain other arrangements and transactions involving the DAO, the Members and/or third parties.
+
+Members’ rights and responsibilities are controlled by the use of the Designated Smart Contact used to conduct the governance and activities of the DAO. Members will cast votes and carry out the decisions made on the Designated Smart Contract. DAO Membership Tokens are held in Addresses.
+
+Section 2.4 - Responsibilities. Each Member shall keep reasonably current in payment of any dues or membership fees and other financial obligations of membership, if applicable and determined by the DAO. Each Member shall notify the DAO of an e-mail address or other acceptable communication channel by which such Member may receive written or electronic materials required or permitted by this document or shall notify the DAO that such Member has no e-mail address and designate a mutually acceptable form of communication.
+
+If you have received any DAO Membership Tokens or are otherwise a Member, you consent and agree to become legally bound by this TUNAA as both a participant in the DAO and more specifically, a Member.
+
+Section 2.5 - Limitations. Status as a Member does not (and shall not be deemed to) create, and the DAO does not (and shall not be deemed to) include, any authority, right or power on the part of a Member to act as the agent, representative or attorney of or otherwise act on behalf of the DAO or any other Member, to bind the DAO or any other Member to any Contract or Liability or to convey any DAO Property or any asset, right or property owned or held by or on behalf of the DAO or any Member. Without limiting the generality of the foregoing, no Member shall be deemed the partner of the DAO or any other Member solely in virtue of being a Member. No Member shall state, purport, imply, hold out or represent to any person that such Member or any other Member has any such authority, right or power.
+
+To the maximum extent permitted by applicable law, no Member shall be (or shall be deemed to be) liable for any Liability of the DAO or any other Member. This shall not (and shall not be deemed to) create or imply any obligation of the DAO or any Member to indemnify or compensate any Member from, or hold any Member harmless against, any Liabilities incurred by such Member under any applicable law, in connection with the Member’s participation in the DAO or otherwise.
+
+Section 2.6 - Inactive status. A Member who falls from good standing may have their membership revoked or suspended through a Guild Kick. References herein to the rights and entitlements of Members shall be understood to refer only to Members in good standing.
+
+Section 2.7 - Access to information. Members shall have access to information concerning operational and financial affairs via the DAO’s preferred treasury application. Currently, the DAO treasury can be viewed via the Designated Smart Contract.
+
+Section 2.8 - Settlement of disputes. In any dispute between the DAO and any of its Members or former Members which cannot be resolved through informal negotiation, it shall be the policy of the DAO to prefer the use of mediation whereby an impartial mediator may facilitate negotiations between the parties and assist them in developing a mutually acceptable settlement. Neither party with a grievance against the other shall have recourse to litigation until the matter is submitted to mediation and attempted to be resolved in good faith. All Members agree that there is a preference to settle disputes amongst Members or between Members and the DAO via decentralized dispute mechanisms in smart contract protocols.
+
+Section 2.9 - Transferability of Membership. Membership rights and interests may not be transferred except by means of Cryptographic Consensus or as otherwise permitted by an approved configuration of the Designated Smart Contract. Any attempted transfer contrary to this section shall be wholly void and shall confer no rights on the intended transferee and shall be cause (though none is needed) to burn the DAO Membership Tokens through a Guild Kick member removal procedure.
+
+Section 2.10 - Withdrawal and Expulsion. A Member may withdraw at any time upon notice to the DAO by electronic writing to an appointed representative of the DAO or by public display to the DAO’s online coordination systems (including, but not limited to, Discord or Telegram). Such notice shall act to disclaim any interests associated with holding DAO Membership Tokens. Withdrawal shall be noticed and effectuated through the Member burning their DAO Membership Tokens, a vote to burn such withdrawing Member’s DAO Membership Tokens, or mechanisms otherwise authorized in the Designated Smart Contract. Any such withdrawal request will not be unreasonably denied and shall be deemed conclusively as the Member’s intent to withdraw from the DAO. A Member may be expelled by the DAO through the Guild Kick procedure established in paragraph 2.6 of this document and adopted by the Members. Upon termination of membership, all rights and interests in the DAO shall cease except for rights to redemption of capital pursuant to Article V below (if any).
+
+Article III - Meetings of Members
+
+Section 3.1 - Meetings. Meetings shall be described on a basis at the discretion of the Members. Typically, governance meetings are set on weekly cadence through online chats where parties agree to conduct such other business as may properly come before the meeting.
+
+Section 3.2 - Special meetings. Special meetings of Members may be called by a group (the “DAO Advisory Group”) designated by Cryptographic Consensus. The DAO Advisory Group is not required and may never be formed. Creation and designation of the DAO Advisory Group will be approved via the Designated Smart Contract.
+
+Section 3.3 - Time and place. The date, time and place of all meetings of the DAO Advisory Group shall be determined by the DAO Advisory Group or, in the event that the DAO Advisory Group fails to act, by Cryptographic Consensus.
+
+Section 3.4 - Notice. Each Member is responsible for monitoring votes of concern on the Designated Smart Contract. Notice of votes can be set up by Members via the Designated Smart Contract. Notices of meetings shall also be posted on the DAO’s official media outlets, including the Member information roster, but the inadvertent failure to do so shall not affect the validity of the meeting. Any business conducted at a meeting of Members other than that specified in the notice of the meeting shall be of an advisory nature only.
+
+Article IV - Decentralized Governance
+
+Section 4.1 - Powers and duties. Except as to matters reserved to Members by law or by this agreement, all powers to be exercised on behalf of the DAO shall be exercised by or under the authority of Members (or such agents or designees approved by Members) as approved through Cryptographic Consensus.
+
+Article V - Fiscal and Miscellaneous Matters
+
+Section 5.1 - Fiscal year. The fiscal year of the DAO shall be the calendar year beginning January 1st and ending December 31st.
+
+Section 5.2 - Indemnification. The DAO shall indemnify its directors, officers, employees, or agents as required under Delaware law, and may indemnify such persons as permitted under Delaware law, including its Members, for acts that do not involve bad faith or intentional misconduct, including fraud. Indemnification payments shall be made on a priority basis but only in such increments and at such times as will not jeopardize the ability of the DAO to pay its other obligations as they become due.
+
+Section 5.3 - Communication by electronic means. Unless otherwise required by law or by agreement, any notice, vote, consent, petition, or other oral or written communication required or permitted can be delivered by electronic means, provided that, in the case where such communication expressly or impliedly requires the signature of the person submitting the communication, means are in place to reasonably assure the authenticity of the signature.
+
+Section 5.4 - Dissolution. In the event of dissolution of the DAO, any funds remaining shall be donated to any 501(c)(3) tax exempt organization.
+
+Article VI - Interpretation and Amendment of TUNAA
+
+Section 6.1 - Interpretation. The DAO Advisory Group (if formed via Cryptographic Consensus) shall have the power to interpret this TUNAA and adopt policies and perform actions in furtherance of its provisions, provided that all such actions are reasonable and consistent with the mission of the DAO and this TUNAA.
+
+Section 6.2 - Severability. In the event that any provision of this TUNAA is determined to be invalid or unenforceable under any statute or rule of law, then such provision shall be deemed inoperative to such extent and shall be deemed modified to conform with such statute or rule of law without affecting the validity or enforceability of any other provision of this TUNAA.
+
+Section 6.3 - Amendment. Any amendments to this TUNAA shall only be valid if made with a Confirmed Transaction with the `setURI()` function of the Ricardian Smart Contract and as otherwise permitted under this TUNAA.
+Article VII - Definitions
+
+(a) “Address” means a public key address on Ethereum.
+
+(b) “Confirmed Transaction” means a transaction that has been recorded on Ethereum in accordance with the Consensus Rules in a valid block whose hashed header is referenced by a commercially reasonable number of subsequent valid blocks on Ethereum. The initial number of such blocks shall be twelve (12).
+
+(c) “Consensus Rules” means the rules for transaction validity, block validity and determination of the canonical blockchain that are embodied in Ethereum.
+
+(d) “Contract” means any: (i) written, oral, implied by course of performance or otherwise or other agreement, contract, understanding, arrangement, settlement, instrument, warranty, license, insurance policy, benefit plan or legally binding commitment or undertaking; or (ii) any representation, statement, promise, commitment, undertaking, right or obligation that may be enforceable, or become subject to a lawful order directing performance thereof, based on equitable principles or doctrines such as estoppel, reliance, or quasi-contract.
+
+(e) “DAO Property” means any token or other asset, right or property licensed to or on deposit with or owned, held, custodied, controlled or possessed by or on behalf of the DAO, including any token on deposit with or held, controlled, possessed by or on deposit with the Designated Smart Contract.
+
+(f) “Designated Smart Contract” means the smart contract deployed on Ethereum that performed the Ricardian Mint or otherwise received the RicardianId thereby and identifies the Members.
+
+(g) “Ethereum” means the Ethereum mainnet and the consensus blockchain for such mainnet (networkID:1, chainID:1) as recognized by the official Go Ethereum Client implementation on the Effective Date or any other compatible blockchain.
+
+(h) “Guild Kick” means removal from the DAO via Cryptographic Consensus or other process authorized by Members effected by means of a burn function or other similar program. Unless specifically provided otherwise, or in the Designated Smart Contract, a member subject to a Guild Kick shall not be entitled to any distribution or return of capital, funds, retains, etc.
+
+(i) “Liability” means any debt, obligation, duty or liability of any nature (including any unknown, undisclosed, unmatured, unaccrued, unasserted, contingent, indirect, conditional, implied, vicarious, inchoate derivative, joint, several or secondary liability), regardless of whether such debt, obligation, duty or liability would be required to be disclosed on a balance sheet prepared in accordance with generally accepted accounting principles and regardless of whether such debt, obligation, duty or liability is immediately due and payable. To be “Liable” means to have, suffer, incur, be obligated for or be subject to a Liability.
+
+(j) “RicardianId” means the `chainId` of the blockchain the Ricardian Mint was executed on and the value of the `id` field stored in the mapping type `ownerOf()` in the contract type `Wrappr` currently deployed to the Address 0xE22ebfbD3e6609A9550a86545E37af7DE1EE688b on Ethereum and as may be deployed on any other compatible blockchain other than those commonly understood as a testnet. The bytecode stored at such Address shall be referred to as the “Ricardian Smart Contract.”
+
+(k) “Ricardian Mint” means a Confirmed Transaction with the `mint()` or `manageMint()` function of the Ricardian Smart Contract that results in the creation of a RicardianId by or for the benefit of an Address.
